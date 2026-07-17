@@ -1,8 +1,34 @@
-import { useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
 import { Company, Sector, Item } from '@/types';
 import * as storage from '@/services/storage';
 
-export function useInventory() {
+interface InventoryContextValue {
+  companies: Company[];
+  sectors: Sector[];
+  items: Item[];
+  loading: boolean;
+  addCompany: (name: string) => Promise<Company>;
+  editCompany: (id: string, name: string) => Promise<Company | null>;
+  removeCompany: (id: string) => Promise<boolean>;
+  addSector: (name: string, companyId: string) => Promise<Sector>;
+  editSector: (id: string, name: string) => Promise<Sector | null>;
+  removeSector: (id: string) => Promise<boolean>;
+  addItem: (item: Omit<Item, 'id' | 'createdAt' | 'updatedAt'>) => Promise<Item>;
+  editItem: (id: string, updates: Partial<Item>) => Promise<Item | null>;
+  removeItem: (id: string) => Promise<boolean>;
+  getTotalValue: () => number;
+  getTotalQuantity: () => number;
+  getItemsByCompany: (companyId: string) => Item[];
+  getItemsBySector: (sectorId: string) => Item[];
+  getSectorsByCompany: (companyId: string) => Sector[];
+  getCompanyName: (companyId: string) => string;
+  getSectorName: (sectorId: string) => string;
+  reload: () => Promise<void>;
+}
+
+const InventoryContext = createContext<InventoryContextValue | null>(null);
+
+export function InventoryProvider({ children }: { children: ReactNode }) {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [sectors, setSectors] = useState<Sector[]>([]);
   const [items, setItems] = useState<Item[]>([]);
@@ -25,7 +51,6 @@ export function useInventory() {
     loadData();
   }, [loadData]);
 
-  // Company operations
   const addCompany = useCallback(async (name: string) => {
     const company = await storage.saveCompany({ name });
     setCompanies(prev => [...prev, company]);
@@ -50,7 +75,6 @@ export function useInventory() {
     return success;
   }, []);
 
-  // Sector operations
   const addSector = useCallback(async (name: string, companyId: string) => {
     const sector = await storage.saveSector({ name, companyId });
     setSectors(prev => [...prev, sector]);
@@ -74,7 +98,6 @@ export function useInventory() {
     return success;
   }, []);
 
-  // Item operations
   const addItem = useCallback(async (item: Omit<Item, 'id' | 'createdAt' | 'updatedAt'>) => {
     const newItem = await storage.saveItem(item);
     setItems(prev => [...prev, newItem]);
@@ -97,9 +120,12 @@ export function useInventory() {
     return success;
   }, []);
 
-  // Computed values
   const getTotalValue = useCallback(() => {
-    return items.reduce((sum, item) => sum + item.value, 0);
+    return items.reduce((sum, item) => sum + item.value * (item.quantity || 1), 0);
+  }, [items]);
+
+  const getTotalQuantity = useCallback(() => {
+    return items.reduce((sum, item) => sum + (item.quantity || 0), 0);
   }, [items]);
 
   const getItemsByCompany = useCallback((companyId: string) => {
@@ -122,31 +148,26 @@ export function useInventory() {
     return sectors.find(s => s.id === sectorId)?.name || 'Unknown';
   }, [sectors]);
 
-  return {
-    companies,
-    sectors,
-    items,
-    loading,
-    // Company operations
-    addCompany,
-    editCompany,
-    removeCompany,
-    // Sector operations
-    addSector,
-    editSector,
-    removeSector,
-    // Item operations
-    addItem,
-    editItem,
-    removeItem,
-    // Computed values
-    getTotalValue,
-    getItemsByCompany,
-    getItemsBySector,
-    getSectorsByCompany,
-    getCompanyName,
-    getSectorName,
-    // Data reload
-    reload: loadData,
-  };
+  return (
+    <InventoryContext.Provider
+      value={{
+        companies, sectors, items, loading,
+        addCompany, editCompany, removeCompany,
+        addSector, editSector, removeSector,
+        addItem, editItem, removeItem,
+        getTotalValue, getTotalQuantity,
+        getItemsByCompany, getItemsBySector, getSectorsByCompany,
+        getCompanyName, getSectorName,
+        reload: loadData,
+      }}
+    >
+      {children}
+    </InventoryContext.Provider>
+  );
+}
+
+export function useInventory(): InventoryContextValue {
+  const ctx = useContext(InventoryContext);
+  if (!ctx) throw new Error('useInventory must be used within InventoryProvider');
+  return ctx;
 }

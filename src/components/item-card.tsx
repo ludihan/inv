@@ -34,7 +34,13 @@ export function ItemCard({ item, companyName, sectorName, onPress, onLongPress }
           {item.name}
         </ThemedText>
         <ThemedText type="small" themeColor="textSecondary">
-          {formatBRL(item.value)}
+          {formatBRL(item.value * (item.quantity || 1))}
+        </ThemedText>
+      </View>
+      
+      <View style={styles.meta}>
+        <ThemedText type="small" themeColor="textSecondary">
+          {formatBRL(item.value)} x {item.quantity || 1}
         </ThemedText>
       </View>
       
@@ -71,6 +77,10 @@ const styles = StyleSheet.create({
   name: {
     flex: 1,
     marginRight: 8,
+  },
+  meta: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   tags: {
     flexDirection: 'row',

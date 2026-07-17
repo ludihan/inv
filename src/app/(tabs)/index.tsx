@@ -11,30 +11,13 @@ import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
 
 export default function HomeScreen() {
   const theme = useTheme();
-  const { companies, sectors, items, getTotalValue, getItemsByCompany, getSectorsByCompany } = useInventory();
+  const { companies, sectors, items, getTotalValue, getTotalQuantity, getItemsByCompany, getItemsBySector, getSectorsByCompany } = useInventory();
   
   const totalValue = getTotalValue();
+  const totalQuantity = getTotalQuantity();
   const totalItems = items.length;
   const totalCompanies = companies.length;
   const totalSectors = sectors.length;
-  
-  // Get top companies by item count
-  const topCompanies = companies
-    .map(company => ({
-      ...company,
-      itemCount: getItemsByCompany(company.id).length,
-    }))
-    .sort((a, b) => b.itemCount - a.itemCount)
-    .slice(0, 5);
-  
-  // Get top sectors by item count
-  const topSectors = sectors
-    .map(sector => ({
-      ...sector,
-      itemCount: items.filter(i => i.sectorId === sector.id).length,
-    }))
-    .sort((a, b) => b.itemCount - a.itemCount)
-    .slice(0, 5);
 
   return (
     <ThemedView style={styles.container}>
@@ -44,68 +27,109 @@ export default function HomeScreen() {
             Inventory
           </ThemedText>
           
-          {/* Stats Cards */}
-          <View style={styles.statsContainer}>
+          {/* Global Stats */}
+          <View style={styles.statsRow}>
             <View style={[styles.statCard, { backgroundColor: theme.backgroundElement }]}>
-              <ThemedText type="small" themeColor="textSecondary">Total Items</ThemedText>
+              <ThemedText type="small" themeColor="textSecondary">Items</ThemedText>
               <ThemedText type="subtitle">{totalItems}</ThemedText>
             </View>
-            
             <View style={[styles.statCard, { backgroundColor: theme.backgroundElement }]}>
-              <ThemedText type="small" themeColor="textSecondary">Total Value</ThemedText>
-              <ThemedText type="subtitle">{formatBRL(totalValue)}</ThemedText>
+              <ThemedText type="small" themeColor="textSecondary">Quantity</ThemedText>
+              <ThemedText type="subtitle">{totalQuantity}</ThemedText>
             </View>
           </View>
           
-          <View style={styles.statsContainer}>
+          <View style={[styles.statCardWide, { backgroundColor: theme.backgroundElement }]}>
+            <ThemedText type="small" themeColor="textSecondary">Total Value</ThemedText>
+            <ThemedText type="subtitle">{formatBRL(totalValue)}</ThemedText>
+          </View>
+          
+          <View style={styles.statsRow}>
             <View style={[styles.statCard, { backgroundColor: theme.backgroundElement }]}>
               <ThemedText type="small" themeColor="textSecondary">Companies</ThemedText>
               <ThemedText type="subtitle">{totalCompanies}</ThemedText>
             </View>
-            
             <View style={[styles.statCard, { backgroundColor: theme.backgroundElement }]}>
               <ThemedText type="small" themeColor="textSecondary">Sectors</ThemedText>
               <ThemedText type="subtitle">{totalSectors}</ThemedText>
             </View>
           </View>
           
-          {/* Top Companies */}
-          {topCompanies.length > 0 && (
+          {/* Per-Company Breakdown */}
+          {companies.length > 0 && (
             <View style={styles.section}>
               <ThemedText type="subtitle" style={styles.sectionTitle}>
-                Top Companies
+                By Company
               </ThemedText>
-              {topCompanies.map(company => (
-                <View 
-                  key={company.id} 
-                  style={[styles.listItem, { backgroundColor: theme.backgroundElement }]}
-                >
-                  <ThemedText type="default">{company.name}</ThemedText>
-                  <ThemedText type="small" themeColor="textSecondary">
-                    {company.itemCount} items
-                  </ThemedText>
-                </View>
-              ))}
+              {companies.map(company => {
+                const companyItems = getItemsByCompany(company.id);
+                const companySectors = getSectorsByCompany(company.id);
+                const companyValue = companyItems.reduce((sum, i) => sum + i.value * (i.quantity || 1), 0);
+                const companyQuantity = companyItems.reduce((sum, i) => sum + (i.quantity || 0), 0);
+                
+                return (
+                  <View key={company.id} style={[styles.companyCard, { backgroundColor: theme.backgroundElement }]}>
+                    <View style={styles.cardHeader}>
+                      <ThemedText type="default">{company.name}</ThemedText>
+                      <ThemedText type="small" themeColor="textSecondary">{formatBRL(companyValue)}</ThemedText>
+                    </View>
+                    <View style={styles.cardStats}>
+                      <ThemedText type="small" themeColor="textSecondary">
+                        {companyItems.length} items  ·  {companyQuantity} units  ·  {companySectors.length} sectors
+                      </ThemedText>
+                    </View>
+                    
+                    {/* Sector breakdown within company */}
+                    {companySectors.map(sector => {
+                      const sectorItems = getItemsBySector(sector.id);
+                      const sectorValue = sectorItems.reduce((sum, i) => sum + i.value * (i.quantity || 1), 0);
+                      const sectorQuantity = sectorItems.reduce((sum, i) => sum + (i.quantity || 0), 0);
+                      
+                      if (sectorItems.length === 0) return null;
+                      
+                      return (
+                        <View key={sector.id} style={[styles.sectorRow, { borderTopColor: theme.backgroundSelected }]}>
+                          <View style={styles.sectorInfo}>
+                            <ThemedText type="small">{sector.name}</ThemedText>
+                            <ThemedText type="small" themeColor="textSecondary">
+                              {sectorItems.length} items  ·  {sectorQuantity} units
+                            </ThemedText>
+                          </View>
+                          <ThemedText type="small">{formatBRL(sectorValue)}</ThemedText>
+                        </View>
+                      );
+                    })}
+                  </View>
+                );
+              })}
             </View>
           )}
           
-          {/* Top Sectors */}
-          {topSectors.length > 0 && (
+          {/* Per-Sector Summary (cross-company) */}
+          {sectors.length > 0 && (
             <View style={styles.section}>
               <ThemedText type="subtitle" style={styles.sectionTitle}>
-                Top Sectors
+                By Sector (all companies)
               </ThemedText>
-              {topSectors.map(sector => (
-                <View 
-                  key={sector.id} 
-                  style={[styles.listItem, { backgroundColor: theme.backgroundElement }]}
-                >
-                  <ThemedText type="default">{sector.name}</ThemedText>
-                  <ThemedText type="small" themeColor="textSecondary">
-                    {sector.itemCount} items
-                  </ThemedText>
-                </View>
-              ))}
+              {sectors.map(sector => {
+                const sectorItems = getItemsBySector(sector.id);
+                const sectorValue = sectorItems.reduce((sum, i) => sum + i.value * (i.quantity || 1), 0);
+                const sectorQuantity = sectorItems.reduce((sum, i) => sum + (i.quantity || 0), 0);
+                const companyName = companies.find(c => c.id === sector.companyId)?.name || 'Unknown';
+                
+                return (
+                  <View key={sector.id} style={[styles.listItem, { backgroundColor: theme.backgroundElement }]}>
+                    <View style={styles.listItemLeft}>
+                      <ThemedText type="default">{sector.name}</ThemedText>
+                      <ThemedText type="small" themeColor="textSecondary">{companyName}</ThemedText>
+                    </View>
+                    <View style={styles.listItemRight}>
+                      <ThemedText type="small">{formatBRL(sectorValue)}</ThemedText>
+                      <ThemedText type="small" themeColor="textSecondary">{sectorQuantity} units</ThemedText>
+                    </View>
+                  </View>
+                );
+              })}
             </View>
           )}
           
@@ -144,7 +168,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: Spacing.four,
   },
-  statsContainer: {
+  statsRow: {
     flexDirection: 'row',
     gap: Spacing.two,
     marginBottom: Spacing.two,
@@ -156,11 +180,43 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: Spacing.one,
   },
+  statCardWide: {
+    padding: Spacing.three,
+    borderRadius: 12,
+    alignItems: 'center',
+    gap: Spacing.one,
+    marginBottom: Spacing.two,
+  },
   section: {
     marginTop: Spacing.four,
   },
   sectionTitle: {
     marginBottom: Spacing.two,
+  },
+  companyCard: {
+    padding: Spacing.three,
+    borderRadius: 12,
+    marginBottom: Spacing.two,
+    gap: Spacing.one,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  cardStats: {
+    marginBottom: Spacing.one,
+  },
+  sectorRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingTop: Spacing.two,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    paddingLeft: Spacing.two,
+  },
+  sectorInfo: {
+    gap: 2,
   },
   listItem: {
     flexDirection: 'row',
@@ -169,6 +225,13 @@ const styles = StyleSheet.create({
     padding: Spacing.three,
     borderRadius: 8,
     marginBottom: Spacing.one,
+  },
+  listItemLeft: {
+    gap: 2,
+  },
+  listItemRight: {
+    alignItems: 'flex-end',
+    gap: 2,
   },
   emptyState: {
     padding: Spacing.four,

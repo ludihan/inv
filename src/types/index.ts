@@ -15,11 +15,12 @@ export interface Item {
   id: string;
   name: string;
   description?: string;
-  value: number; // Monetary value in BRL (stored as number)
+  value: number;
+  quantity: number;
   companyId: string;
   sectorId: string;
-  createdAt: string; // ISO date string
-  updatedAt: string; // ISO date string
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface InventoryData {

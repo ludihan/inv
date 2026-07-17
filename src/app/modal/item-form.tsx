@@ -24,6 +24,7 @@ export default function ItemFormModal() {
   const [name, setName] = useState(existingItem?.name || '');
   const [description, setDescription] = useState(existingItem?.description || '');
   const [value, setValue] = useState(existingItem?.value || 0);
+  const [quantity, setQuantity] = useState(existingItem?.quantity || 1);
   const [selectedCompanyId, setSelectedCompanyId] = useState(existingItem?.companyId || params.companyId || '');
   const [selectedSectorId, setSelectedSectorId] = useState(existingItem?.sectorId || params.sectorId || '');
   
@@ -32,6 +33,7 @@ export default function ItemFormModal() {
       setName(existingItem.name);
       setDescription(existingItem.description || '');
       setValue(existingItem.value);
+      setQuantity(existingItem.quantity || 1);
       setSelectedCompanyId(existingItem.companyId);
       setSelectedSectorId(existingItem.sectorId);
     }
@@ -49,6 +51,7 @@ export default function ItemFormModal() {
         name: name.trim(),
         description: description.trim() || undefined,
         value,
+        quantity,
         companyId: selectedCompanyId,
         sectorId: selectedSectorId,
       });
@@ -57,6 +60,7 @@ export default function ItemFormModal() {
         name: name.trim(),
         description: description.trim() || undefined,
         value,
+        quantity,
         companyId: selectedCompanyId,
         sectorId: selectedSectorId,
       });
@@ -101,6 +105,18 @@ export default function ItemFormModal() {
           <CurrencyInput
             value={value}
             onChangeText={setValue}
+          />
+        </View>
+        
+        <View style={styles.field}>
+          <ThemedText type="small" themeColor="textSecondary">Quantity *</ThemedText>
+          <TextInput
+            style={[styles.input, { backgroundColor: theme.backgroundElement, borderColor: theme.backgroundSelected, color: theme.text }]}
+            value={String(quantity)}
+            onChangeText={(text) => setQuantity(parseInt(text) || 0)}
+            keyboardType="number-pad"
+            placeholder="1"
+            placeholderTextColor={theme.textSecondary}
           />
         </View>
         

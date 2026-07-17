@@ -40,18 +40,18 @@ export async function exportToCSV(): Promise<void> {
   const data = await getAllData();
   
   // Companies CSV
-  let csv = 'TYPE,ID,NAME,COMPANY_ID,SECTOR_ID,VALUE,DESCRIPTION,CREATED_AT,UPDATED_AT\n';
+  let csv = 'TYPE,ID,NAME,COMPANY_ID,SECTOR_ID,VALUE,QUANTITY,DESCRIPTION,CREATED_AT,UPDATED_AT\n';
   
   for (const company of data.companies) {
-    csv += `COMPANY,${company.id},${escapeCSV(company.name)},,,,"",${company.createdAt},\n`;
+    csv += `COMPANY,${company.id},${escapeCSV(company.name)},,,,,"",${company.createdAt},\n`;
   }
   
   for (const sector of data.sectors) {
-    csv += `SECTOR,${sector.id},${escapeCSV(sector.name)},${sector.companyId},,,"",${sector.createdAt},\n`;
+    csv += `SECTOR,${sector.id},${escapeCSV(sector.name)},${sector.companyId},,,,"",${sector.createdAt},\n`;
   }
   
   for (const item of data.items) {
-    csv += `ITEM,${item.id},${escapeCSV(item.name)},${item.companyId},${item.sectorId},${item.value},${escapeCSV(item.description || '')},${item.createdAt},${item.updatedAt}\n`;
+    csv += `ITEM,${item.id},${escapeCSV(item.name)},${item.companyId},${item.sectorId},${item.value},${item.quantity || 1},${escapeCSV(item.description || '')},${item.createdAt},${item.updatedAt}\n`;
   }
   
   const file = new File(Paths.document, 'inventory_export.csv');
@@ -106,7 +106,8 @@ export async function importFromCSV(): Promise<InventoryData | null> {
         companyId: values[3],
         sectorId: values[4],
         value: parseFloat(values[5]) || 0,
-        description: values[6] || undefined,
+        quantity: parseInt(values[6]) || 1,
+        description: values[7] || undefined,
         createdAt: values[8] || new Date().toISOString(),
         updatedAt: values[9] || new Date().toISOString(),
       });
