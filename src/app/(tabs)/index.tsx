@@ -1,23 +1,49 @@
 import React from 'react';
-import { View, StyleSheet, ScrollView } from 'react-native';
+import { Alert, Pressable, StyleSheet, View, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useTheme } from '@/hooks/use-theme';
 import { useInventory } from '@/hooks/useInventory';
-import { formatBRL } from '@/services/csv';
+import { formatBRL, exportToCSV, importAndMergeCSV } from '@/services/csv';
 import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
 
 export default function HomeScreen() {
   const theme = useTheme();
-  const { companies, sectors, items, getTotalValue, getTotalQuantity, getItemsByCompany, getItemsBySector, getSectorsByCompany } = useInventory();
-  
+  const {
+    companies, sectors, items,
+    getTotalValue, getTotalQuantity,
+    getItemsByCompany, getItemsBySector, getSectorsByCompany,
+    reload,
+  } = useInventory();
+
   const totalValue = getTotalValue();
   const totalQuantity = getTotalQuantity();
   const totalItems = items.length;
   const totalCompanies = companies.length;
   const totalSectors = sectors.length;
+
+  const handleExport = async () => {
+    try {
+      await exportToCSV();
+      Alert.alert('Exported', 'Inventory exported successfully.');
+    } catch (e: any) {
+      Alert.alert('Error', e.message || 'Failed to export.');
+    }
+  };
+
+  const handleImport = async () => {
+    try {
+      const result = await importAndMergeCSV();
+      if (result.imported) {
+        await reload();
+        Alert.alert('Imported', result.message);
+      }
+    } catch (e: any) {
+      Alert.alert('Error', e.message || 'Failed to import.');
+    }
+  };
 
   return (
     <ThemedView style={styles.container}>
@@ -26,8 +52,7 @@ export default function HomeScreen() {
           <ThemedText type="title" style={styles.title}>
             Inventory
           </ThemedText>
-          
-          {/* Global Stats */}
+
           <View style={styles.statsRow}>
             <View style={[styles.statCard, { backgroundColor: theme.backgroundElement }]}>
               <ThemedText type="small" themeColor="textSecondary">Items</ThemedText>
@@ -38,12 +63,12 @@ export default function HomeScreen() {
               <ThemedText type="subtitle">{totalQuantity}</ThemedText>
             </View>
           </View>
-          
+
           <View style={[styles.statCardWide, { backgroundColor: theme.backgroundElement }]}>
             <ThemedText type="small" themeColor="textSecondary">Total Value</ThemedText>
             <ThemedText type="subtitle">{formatBRL(totalValue)}</ThemedText>
           </View>
-          
+
           <View style={styles.statsRow}>
             <View style={[styles.statCard, { backgroundColor: theme.backgroundElement }]}>
               <ThemedText type="small" themeColor="textSecondary">Companies</ThemedText>
@@ -54,8 +79,22 @@ export default function HomeScreen() {
               <ThemedText type="subtitle">{totalSectors}</ThemedText>
             </View>
           </View>
-          
-          {/* Per-Company Breakdown */}
+
+          <View style={styles.csvRow}>
+            <Pressable
+              style={[styles.csvButton, { backgroundColor: theme.backgroundElement, borderColor: theme.backgroundSelected }]}
+              onPress={handleExport}
+            >
+              <ThemedText type="default">Export CSV</ThemedText>
+            </Pressable>
+            <Pressable
+              style={[styles.csvButton, { backgroundColor: theme.backgroundElement, borderColor: theme.backgroundSelected }]}
+              onPress={handleImport}
+            >
+              <ThemedText type="default">Import CSV</ThemedText>
+            </Pressable>
+          </View>
+
           {companies.length > 0 && (
             <View style={styles.section}>
               <ThemedText type="subtitle" style={styles.sectionTitle}>
@@ -66,27 +105,24 @@ export default function HomeScreen() {
                 const companySectors = getSectorsByCompany(company.id);
                 const companyValue = companyItems.reduce((sum, i) => sum + i.value * (i.quantity || 1), 0);
                 const companyQuantity = companyItems.reduce((sum, i) => sum + (i.quantity || 0), 0);
-                
+
                 return (
                   <View key={company.id} style={[styles.companyCard, { backgroundColor: theme.backgroundElement }]}>
                     <View style={styles.cardHeader}>
                       <ThemedText type="default">{company.name}</ThemedText>
                       <ThemedText type="small" themeColor="textSecondary">{formatBRL(companyValue)}</ThemedText>
                     </View>
-                    <View style={styles.cardStats}>
-                      <ThemedText type="small" themeColor="textSecondary">
-                        {companyItems.length} items  ·  {companyQuantity} units  ·  {companySectors.length} sectors
-                      </ThemedText>
-                    </View>
-                    
-                    {/* Sector breakdown within company */}
+                    <ThemedText type="small" themeColor="textSecondary">
+                      {companyItems.length} items  ·  {companyQuantity} units  ·  {companySectors.length} sectors
+                    </ThemedText>
+
                     {companySectors.map(sector => {
                       const sectorItems = getItemsBySector(sector.id);
                       const sectorValue = sectorItems.reduce((sum, i) => sum + i.value * (i.quantity || 1), 0);
                       const sectorQuantity = sectorItems.reduce((sum, i) => sum + (i.quantity || 0), 0);
-                      
+
                       if (sectorItems.length === 0) return null;
-                      
+
                       return (
                         <View key={sector.id} style={[styles.sectorRow, { borderTopColor: theme.backgroundSelected }]}>
                           <View style={styles.sectorInfo}>
@@ -104,8 +140,7 @@ export default function HomeScreen() {
               })}
             </View>
           )}
-          
-          {/* Per-Sector Summary (cross-company) */}
+
           {sectors.length > 0 && (
             <View style={styles.section}>
               <ThemedText type="subtitle" style={styles.sectionTitle}>
@@ -116,7 +151,7 @@ export default function HomeScreen() {
                 const sectorValue = sectorItems.reduce((sum, i) => sum + i.value * (i.quantity || 1), 0);
                 const sectorQuantity = sectorItems.reduce((sum, i) => sum + (i.quantity || 0), 0);
                 const companyName = companies.find(c => c.id === sector.companyId)?.name || 'Unknown';
-                
+
                 return (
                   <View key={sector.id} style={[styles.listItem, { backgroundColor: theme.backgroundElement }]}>
                     <View style={styles.listItemLeft}>
@@ -132,8 +167,7 @@ export default function HomeScreen() {
               })}
             </View>
           )}
-          
-          {/* Empty State */}
+
           {totalItems === 0 && (
             <View style={[styles.emptyState, { backgroundColor: theme.backgroundElement }]}>
               <ThemedText type="subtitle" style={styles.emptyTitle}>
@@ -187,6 +221,18 @@ const styles = StyleSheet.create({
     gap: Spacing.one,
     marginBottom: Spacing.two,
   },
+  csvRow: {
+    flexDirection: 'row',
+    gap: Spacing.two,
+    marginTop: Spacing.four,
+  },
+  csvButton: {
+    flex: 1,
+    paddingVertical: Spacing.two,
+    borderRadius: 12,
+    borderWidth: 1,
+    alignItems: 'center',
+  },
   section: {
     marginTop: Spacing.four,
   },
@@ -203,9 +249,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-  },
-  cardStats: {
-    marginBottom: Spacing.one,
   },
   sectorRow: {
     flexDirection: 'row',
