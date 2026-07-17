@@ -173,7 +173,7 @@ export default function ItemFormModal() {
               </Pressable>
             ))}
           </ScrollView>
-          {selectedCompanyId && filteredSectors.length === 0 && (
+          {selectedCompanyId !== '' && filteredSectors.length === 0 && (
             <ThemedText type="small" themeColor="textSecondary" style={styles.hint}>
               No sectors for this company. Add one first.
             </ThemedText>
