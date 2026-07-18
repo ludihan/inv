@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, Pressable, TextInput } from 'react-native';
+import { View, StyleSheet, Pressable, TextInput } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -36,7 +37,7 @@ export default function CompanyFormModal() {
   
   return (
     <ThemedView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.content}>
+      <KeyboardAwareScrollView contentContainerStyle={styles.content}>
         <ThemedText type="title" style={styles.title}>
           {isEditing ? 'Edit Company' : 'Add Company'}
         </ThemedText>
@@ -79,7 +80,7 @@ export default function CompanyFormModal() {
             </ThemedText>
           </Pressable>
         </View>
-      </ScrollView>
+      </KeyboardAwareScrollView>
     </ThemedView>
   );
 }
