@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Crypto from 'expo-crypto';
 import { Company, Sector, Item, InventoryData } from '@/types';
 
 const STORAGE_KEYS = {
@@ -8,7 +9,7 @@ const STORAGE_KEYS = {
 };
 
 function generateId(): string {
-  return crypto.randomUUID();
+  return Crypto.randomUUID();
 }
 
 // Company operations
