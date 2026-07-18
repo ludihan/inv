@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { TextInput, StyleSheet, type TextInputProps } from 'react-native';
 import { useTheme } from '@/hooks/use-theme';
 
@@ -7,19 +7,25 @@ interface CurrencyInputProps extends Omit<TextInputProps, 'value' | 'onChangeTex
   onChangeText: (value: number) => void;
 }
 
+function formatCents(cents: number): string {
+  const s = String(Math.abs(Math.round(cents))).padStart(3, '0');
+  return `${s.slice(0, -2)},${s.slice(-2)}`;
+}
+
 export function CurrencyInput({ value, onChangeText, style, ...props }: CurrencyInputProps) {
   const theme = useTheme();
+  const [cents, setCents] = useState(() => Math.round(value * 100));
+
+  useEffect(() => {
+    setCents(Math.round(value * 100));
+  }, [value]);
 
   const handleChange = (text: string) => {
-    // Remove non-numeric characters except decimal point
-    const cleaned = text.replace(/[^\d.]/g, '');
-    const numValue = parseFloat(cleaned) || 0;
-    onChangeText(numValue);
-  };
-
-  const formatDisplay = (num: number): string => {
-    if (num === 0) return '';
-    return num.toFixed(2);
+    const digits = text.replace(/\D/g, '');
+    const newCents = digits === '' ? 0 : parseInt(digits, 10);
+    if (newCents > 100000000000) return;
+    setCents(newCents);
+    onChangeText(newCents / 100);
   };
 
   return (
@@ -33,10 +39,10 @@ export function CurrencyInput({ value, onChangeText, style, ...props }: Currency
         },
         style,
       ]}
-      value={formatDisplay(value)}
+      value={formatCents(cents)}
       onChangeText={handleChange}
-      keyboardType="decimal-pad"
-      placeholder="0.00"
+      keyboardType="number-pad"
+      placeholder="0,00"
       placeholderTextColor={theme.textSecondary}
       {...props}
     />
