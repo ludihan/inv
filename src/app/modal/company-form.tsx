@@ -37,7 +37,7 @@ export default function CompanyFormModal() {
   
   return (
     <ThemedView style={styles.container}>
-      <KeyboardAwareScrollView contentContainerStyle={styles.content}>
+      <KeyboardAwareScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <ThemedText type="title" style={styles.title}>
           {isEditing ? 'Edit Company' : 'Add Company'}
         </ThemedText>
