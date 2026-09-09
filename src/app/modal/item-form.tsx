@@ -42,8 +42,11 @@ export default function ItemFormModal() {
   
   const filteredSectors = sectors.filter(s => s.companyId === selectedCompanyId);
   
+  const isValid =
+    !!name.trim() && !!selectedCompanyId && !!selectedSectorId && quantity > 0;
+
   const handleSubmit = async () => {
-    if (!name.trim() || !selectedCompanyId || !selectedSectorId) {
+    if (!isValid) {
       return;
     }
     
@@ -114,7 +117,10 @@ export default function ItemFormModal() {
           <TextInput
             style={[styles.input, { backgroundColor: theme.backgroundElement, borderColor: theme.backgroundSelected, color: theme.text }]}
             value={String(quantity)}
-            onChangeText={(text) => setQuantity(parseInt(text) || 0)}
+            onChangeText={(text) => {
+              const n = parseInt(text.replace(/\D/g, ''), 10);
+              setQuantity(Number.isFinite(n) ? n : 0);
+            }}
             keyboardType="number-pad"
             placeholder="1"
             placeholderTextColor={theme.textSecondary}
@@ -191,20 +197,18 @@ export default function ItemFormModal() {
           
           <Pressable
             style={[
-              styles.button, 
-              styles.submitButton, 
-              { 
-                backgroundColor: (!name.trim() || !selectedCompanyId || !selectedSectorId) 
-                  ? theme.backgroundSelected 
-                  : theme.text,
+              styles.button,
+              styles.submitButton,
+              {
+                backgroundColor: isValid ? theme.text : theme.backgroundSelected,
               },
             ]}
             onPress={handleSubmit}
-            disabled={!name.trim() || !selectedCompanyId || !selectedSectorId}
+            disabled={!isValid}
           >
-            <ThemedText 
+            <ThemedText
               type="default"
-              style={{ color: (!name.trim() || !selectedCompanyId || !selectedSectorId) ? theme.textSecondary : theme.background }}
+              style={{ color: isValid ? theme.background : theme.textSecondary }}
             >
               {isEditing ? 'Save' : 'Add'}
             </ThemedText>

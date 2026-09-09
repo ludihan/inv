@@ -10,6 +10,7 @@ import { EmptyState } from '@/components/empty-state';
 import { useTheme } from '@/hooks/use-theme';
 import { useInventory } from '@/hooks/useInventory';
 import { Item } from '@/types';
+import { formatBRL } from '@/services/csv';
 import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
 
 export default function ItemsScreen() {
@@ -53,6 +54,19 @@ export default function ItemsScreen() {
   const filteredSectors = selectedCompanyId
     ? sectors.filter(s => s.companyId === selectedCompanyId)
     : sectors;
+
+  const hasActiveFilters = !!searchQuery || !!selectedCompanyId || !!selectedSectorId;
+
+  const clearFilters = () => {
+    setSearchQuery('');
+    setSelectedCompanyId(null);
+    setSelectedSectorId(null);
+  };
+
+  const filteredValue = filteredItems.reduce(
+    (sum, i) => sum + i.value * (i.quantity || 1),
+    0,
+  );
 
   return (
     <ThemedView style={styles.container}>
@@ -135,6 +149,18 @@ export default function ItemsScreen() {
           />
         </View>
         
+        {/* Summary */}
+        <View style={styles.summaryRow}>
+          <ThemedText type="small" themeColor="textSecondary">
+            {filteredItems.length} {filteredItems.length === 1 ? 'item' : 'items'} · {formatBRL(filteredValue)}
+          </ThemedText>
+          {hasActiveFilters && (
+            <Pressable onPress={clearFilters} hitSlop={8}>
+              <ThemedText type="small" themeColor="textSecondary">Clear filters ✕</ThemedText>
+            </Pressable>
+          )}
+        </View>
+
         {/* Items List */}
         {filteredItems.length === 0 ? (
           <EmptyState
@@ -200,6 +226,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   filtersContainer: {
+    paddingHorizontal: Spacing.four,
+    marginBottom: Spacing.two,
+  },
+  summaryRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     paddingHorizontal: Spacing.four,
     marginBottom: Spacing.two,
   },

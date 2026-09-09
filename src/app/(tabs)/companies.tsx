@@ -15,7 +15,7 @@ import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
 export default function CompaniesScreen() {
   const router = useRouter();
   const theme = useTheme();
-  const { companies, sectors, items, removeCompany, removeSector, getSectorsByCompany, getItemsByCompany } = useInventory();
+  const { companies, removeCompany, removeSector, getSectorsByCompany, getItemsByCompany } = useInventory();
   
   const handleEditCompany = (company: Company) => {
     router.push({
@@ -47,7 +47,6 @@ export default function CompaniesScreen() {
   };
   
   const handleEditSector = (sector: Sector) => {
-    const company = companies.find(c => c.id === sector.companyId);
     router.push({
       pathname: '/modal/sector-form',
       params: { 
