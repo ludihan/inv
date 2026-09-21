@@ -36,7 +36,7 @@ export default function ItemsScreen() {
   const theme = useTheme();
   const sheet = useActionSheet();
   const { t, plural } = useT();
-  const params = useLocalSearchParams<{ companyId?: string; sectorId?: string; lowStock?: string }>();
+  const params = useLocalSearchParams<{ companyId?: string; sectorId?: string; lowStock?: string; t?: string }>();
   const {
     items, companies, sectors, removeItem, duplicateItem, adjustQuantity, getCompanyName, getSectorName,
   } = useInventory();
@@ -50,7 +50,7 @@ export default function ItemsScreen() {
   // Deep links from other screens (e.g. "View items" on a company, low stock alert).
   const paramKey =
     params.companyId || params.sectorId || params.lowStock
-      ? `${params.companyId ?? ''}|${params.sectorId ?? ''}|${params.lowStock ?? ''}`
+      ? `${params.companyId ?? ''}|${params.sectorId ?? ''}|${params.lowStock ?? ''}|${params.t ?? ''}`
       : '';
   const [appliedParamKey, setAppliedParamKey] = useState('');
   if (paramKey !== appliedParamKey) {
@@ -104,7 +104,7 @@ export default function ItemsScreen() {
     setSelectedCompanyId(null);
     setSelectedSectorId(null);
     setLowStockOnly(false);
-    router.setParams({ companyId: undefined, sectorId: undefined, lowStock: undefined });
+    router.setParams({ companyId: undefined, sectorId: undefined, lowStock: undefined, t: undefined });
   };
 
   const filteredValue = sumTotal(filteredItems);
@@ -193,7 +193,7 @@ export default function ItemsScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={styles.safeArea} edges={['top']}>
         <ScreenHeader title={t('items.title')} subtitle={t('items.subtitle')} />
 
         {items.length === 0 ? (

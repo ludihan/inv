@@ -87,7 +87,7 @@ export default function SettingsScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={styles.container} edges={['top']}>
         <ScrollView contentContainerStyle={styles.content}>
           <ScreenHeader title={t('settings.title')} subtitle={t('settings.subtitle')} />
 

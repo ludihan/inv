@@ -36,7 +36,7 @@ export default function CompaniesScreen() {
   
   const openCompanyMenu = (company: Company) => {
     sheet.show(company.name, [
-      { label: t('companies.viewItems'), onPress: () => router.push({ pathname: '/items', params: { companyId: company.id } }) },
+      { label: t('companies.viewItems'), onPress: () => router.push({ pathname: '/items', params: { companyId: company.id, t: String(Date.now()) } }) },
       { label: t('companies.addSector'), onPress: () => handleAddSector(company.id) },
       { label: t('rename'), onPress: () => handleEditCompany(company) },
       { label: t('delete'), destructive: true, onPress: () => handleDeleteCompany(company) },
@@ -45,7 +45,7 @@ export default function CompaniesScreen() {
 
   const openSectorMenu = (sector: Sector) => {
     sheet.show(sector.name, [
-      { label: t('companies.viewItems'), onPress: () => router.push({ pathname: '/items', params: { companyId: sector.companyId, sectorId: sector.id } }) },
+      { label: t('companies.viewItems'), onPress: () => router.push({ pathname: '/items', params: { companyId: sector.companyId, sectorId: sector.id, t: String(Date.now()) } }) },
       { label: t('rename'), onPress: () => handleEditSector(sector) },
       { label: t('delete'), destructive: true, onPress: () => handleDeleteSector(sector) },
     ]);
@@ -79,7 +79,7 @@ export default function CompaniesScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={styles.safeArea} edges={['top']}>
         <ScreenHeader title={t('companies.title')} subtitle={t('companies.subtitle')} />
         
         {/* Companies List */}

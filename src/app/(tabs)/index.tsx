@@ -13,7 +13,7 @@ import { useTheme } from '@/hooks/use-theme';
 import { useInventory } from '@/hooks/useInventory';
 import { useT } from '@/i18n';
 import { formatBRL } from '@/services/csv';
-import { isLowStock, isOutOfStock, itemTotal, sumQuantity, sumTotal } from '@/services/stock';
+import { isLowStock, isOutOfStock, itemQuantity, itemTotal, sumQuantity, sumTotal } from '@/services/stock';
 import { BottomTabInset, MaxContentWidth, Radius, Spacing } from '@/constants/theme';
 import type { Item } from '@/types';
 
@@ -78,7 +78,7 @@ export default function HomeScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={styles.container} edges={['top']}>
         <ScrollView contentContainerStyle={styles.content}>
           <ScreenHeader
             title={t('home.title')}
@@ -124,7 +124,7 @@ export default function HomeScreen() {
             )}
 
             {attention.length > 0 && (
-              <Section title={t('home.attention')} action={{ label: t('home.viewAll'), onPress: () => router.push({ pathname: '/items', params: { lowStock: '1' } }) }}>
+              <Section title={t('home.attention')} action={{ label: t('home.viewAll'), onPress: () => router.push({ pathname: '/items', params: { lowStock: '1', t: String(Date.now()) } }) }}>
                 <View style={[styles.list, card]}>
                   {attention.slice(0, 4).map((item, index) => (
                     <Pressable
@@ -135,7 +135,7 @@ export default function HomeScreen() {
                       <View style={styles.flex}>
                         <ThemedText type="default" numberOfLines={1}>{item.name}</ThemedText>
                         <ThemedText type="small" themeColor="textSecondary">
-                          {t('home.left', { count: item.quantity })}{item.minQuantity ? ` · ${t('home.min', { count: item.minQuantity })}` : ''}
+                          {t('home.left', { count: itemQuantity(item) })}{item.minQuantity ? ` · ${t('home.min', { count: item.minQuantity })}` : ''}
                         </ThemedText>
                       </View>
                       {isOutOfStock(item) ? <Badge label={t('home.out')} tone="danger" /> : <Badge label={t('home.low')} tone="warning" />}
