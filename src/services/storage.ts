@@ -7,6 +7,7 @@ const STORAGE_KEYS = {
   SECTORS: '@inventory_sectors',
   ITEMS: '@inventory_items',
   THEME: '@inventory_theme',
+  LANGUAGE: '@inventory_language',
 };
 
 function generateId(): string {
@@ -194,4 +195,16 @@ export async function getThemePreference(): Promise<ThemePreference> {
 
 export async function saveThemePreference(pref: ThemePreference): Promise<void> {
   await AsyncStorage.setItem(STORAGE_KEYS.THEME, pref);
+}
+
+// Language preference
+export type LanguagePreference = 'system' | 'en' | 'pt';
+
+export async function getLanguagePreference(): Promise<LanguagePreference> {
+  const value = await AsyncStorage.getItem(STORAGE_KEYS.LANGUAGE);
+  return value === 'en' || value === 'pt' ? value : 'system';
+}
+
+export async function saveLanguagePreference(pref: LanguagePreference): Promise<void> {
+  await AsyncStorage.setItem(STORAGE_KEYS.LANGUAGE, pref);
 }
