@@ -10,6 +10,17 @@ const STORAGE_KEYS = {
   LANGUAGE: '@inventory_language',
 };
 
+// Every mutation is a read-modify-write on AsyncStorage, so run them one at a
+// time to keep concurrent actions from overwriting each other.
+let queue: Promise<unknown> = Promise.resolve();
+function serialized<A extends unknown[], R>(fn: (...args: A) => Promise<R>) {
+  return (...args: A): Promise<R> => {
+    const run = queue.then(() => fn(...args));
+    queue = run.catch(() => {});
+    return run;
+  };
+}
+
 function generateId(): string {
   return Crypto.randomUUID();
 }
@@ -20,7 +31,7 @@ export async function getCompanies(): Promise<Company[]> {
   return data ? JSON.parse(data) : [];
 }
 
-export async function saveCompany(company: Omit<Company, 'id' | 'createdAt'>): Promise<Company> {
+async function saveCompanyUnlocked(company: Omit<Company, 'id' | 'createdAt'>): Promise<Company> {
   const companies = await getCompanies();
   const newCompany: Company = {
     ...company,
@@ -32,7 +43,7 @@ export async function saveCompany(company: Omit<Company, 'id' | 'createdAt'>): P
   return newCompany;
 }
 
-export async function updateCompany(id: string, updates: Partial<Company>): Promise<Company | null> {
+async function updateCompanyUnlocked(id: string, updates: Partial<Company>): Promise<Company | null> {
   const companies = await getCompanies();
   const index = companies.findIndex(c => c.id === id);
   if (index === -1) return null;
@@ -41,7 +52,7 @@ export async function updateCompany(id: string, updates: Partial<Company>): Prom
   return companies[index];
 }
 
-export async function deleteCompany(id: string): Promise<boolean> {
+async function deleteCompanyUnlocked(id: string): Promise<boolean> {
   const companies = await getCompanies();
   const filtered = companies.filter(c => c.id !== id);
   if (filtered.length === companies.length) return false;
@@ -68,7 +79,7 @@ export async function getSectorsByCompany(companyId: string): Promise<Sector[]> 
   return sectors.filter(s => s.companyId === companyId);
 }
 
-export async function saveSector(sector: Omit<Sector, 'id' | 'createdAt'>): Promise<Sector> {
+async function saveSectorUnlocked(sector: Omit<Sector, 'id' | 'createdAt'>): Promise<Sector> {
   const sectors = await getSectors();
   const newSector: Sector = {
     ...sector,
@@ -80,7 +91,7 @@ export async function saveSector(sector: Omit<Sector, 'id' | 'createdAt'>): Prom
   return newSector;
 }
 
-export async function updateSector(id: string, updates: Partial<Sector>): Promise<Sector | null> {
+async function updateSectorUnlocked(id: string, updates: Partial<Sector>): Promise<Sector | null> {
   const sectors = await getSectors();
   const index = sectors.findIndex(s => s.id === id);
   if (index === -1) return null;
@@ -89,7 +100,7 @@ export async function updateSector(id: string, updates: Partial<Sector>): Promis
   return sectors[index];
 }
 
-export async function deleteSector(id: string): Promise<boolean> {
+async function deleteSectorUnlocked(id: string): Promise<boolean> {
   const sectors = await getSectors();
   const filtered = sectors.filter(s => s.id !== id);
   if (filtered.length === sectors.length) return false;
@@ -117,7 +128,7 @@ export async function getItemsBySector(sectorId: string): Promise<Item[]> {
   return items.filter(i => i.sectorId === sectorId);
 }
 
-export async function saveItem(item: Omit<Item, 'id' | 'createdAt' | 'updatedAt'>): Promise<Item> {
+async function saveItemUnlocked(item: Omit<Item, 'id' | 'createdAt' | 'updatedAt'>): Promise<Item> {
   const items = await getItems();
   const newItem: Item = {
     ...item,
@@ -130,7 +141,7 @@ export async function saveItem(item: Omit<Item, 'id' | 'createdAt' | 'updatedAt'
   return newItem;
 }
 
-export async function updateItem(id: string, updates: Partial<Item>): Promise<Item | null> {
+async function updateItemUnlocked(id: string, updates: Partial<Item>): Promise<Item | null> {
   const items = await getItems();
   const index = items.findIndex(i => i.id === id);
   if (index === -1) return null;
@@ -139,7 +150,7 @@ export async function updateItem(id: string, updates: Partial<Item>): Promise<It
   return items[index];
 }
 
-export async function adjustItemQuantity(id: string, delta: number): Promise<Item | null> {
+async function adjustItemQuantityUnlocked(id: string, delta: number): Promise<Item | null> {
   const items = await getItems();
   const index = items.findIndex(i => i.id === id);
   if (index === -1) return null;
@@ -149,7 +160,7 @@ export async function adjustItemQuantity(id: string, delta: number): Promise<Ite
   return items[index];
 }
 
-export async function deleteItem(id: string): Promise<boolean> {
+async function deleteItemUnlocked(id: string): Promise<boolean> {
   const items = await getItems();
   const filtered = items.filter(i => i.id !== id);
   if (filtered.length === items.length) return false;
@@ -168,7 +179,7 @@ export async function getAllData(): Promise<InventoryData> {
 }
 
 // Save all inventory data (for import)
-export async function saveAllData(data: InventoryData): Promise<void> {
+async function saveAllDataUnlocked(data: InventoryData): Promise<void> {
   await Promise.all([
     AsyncStorage.setItem(STORAGE_KEYS.COMPANIES, JSON.stringify(data.companies)),
     AsyncStorage.setItem(STORAGE_KEYS.SECTORS, JSON.stringify(data.sectors)),
@@ -177,7 +188,7 @@ export async function saveAllData(data: InventoryData): Promise<void> {
 }
 
 // Clear all data
-export async function clearAllData(): Promise<void> {
+async function clearAllDataUnlocked(): Promise<void> {
   await Promise.all([
     AsyncStorage.removeItem(STORAGE_KEYS.COMPANIES),
     AsyncStorage.removeItem(STORAGE_KEYS.SECTORS),
@@ -208,3 +219,17 @@ export async function getLanguagePreference(): Promise<LanguagePreference> {
 export async function saveLanguagePreference(pref: LanguagePreference): Promise<void> {
   await AsyncStorage.setItem(STORAGE_KEYS.LANGUAGE, pref);
 }
+
+// Serialized mutations
+export const saveCompany = serialized(saveCompanyUnlocked);
+export const updateCompany = serialized(updateCompanyUnlocked);
+export const deleteCompany = serialized(deleteCompanyUnlocked);
+export const saveSector = serialized(saveSectorUnlocked);
+export const updateSector = serialized(updateSectorUnlocked);
+export const deleteSector = serialized(deleteSectorUnlocked);
+export const saveItem = serialized(saveItemUnlocked);
+export const updateItem = serialized(updateItemUnlocked);
+export const adjustItemQuantity = serialized(adjustItemQuantityUnlocked);
+export const deleteItem = serialized(deleteItemUnlocked);
+export const saveAllData = serialized(saveAllDataUnlocked);
+export const clearAllData = serialized(clearAllDataUnlocked);
