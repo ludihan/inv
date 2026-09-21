@@ -35,7 +35,7 @@ export function CurrencyInput({ value, onChangeText, style, ...props }: Currency
         { 
           backgroundColor: theme.backgroundElement,
           color: theme.text,
-          borderColor: theme.backgroundSelected,
+          borderColor: theme.border,
         },
         style,
       ]}
@@ -53,8 +53,8 @@ const styles = StyleSheet.create({
   input: {
     height: 48,
     borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 12,
+    borderRadius: 12,
+    paddingHorizontal: 16,
     fontSize: 16,
   },
 });
