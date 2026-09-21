@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { Spacing } from '@/constants/theme';
+import { MaxContentWidth, Spacing } from '@/constants/theme';
 
 interface ScreenHeaderProps {
   title: string;
@@ -20,6 +20,9 @@ export function ScreenHeader({ title, subtitle }: ScreenHeaderProps) {
 
 const styles = StyleSheet.create({
   header: {
+    maxWidth: MaxContentWidth,
+    width: '100%',
+    alignSelf: 'center',
     paddingHorizontal: Spacing.four,
     paddingTop: Spacing.three,
     paddingBottom: Spacing.three,
