@@ -19,6 +19,12 @@ between devices through CSV export/import.
   <img src="docs/screenshots/home-pt.png" width="23%" alt="Dashboard in Portuguese" />
   <img src="docs/screenshots/items-pt.png" width="23%" alt="Items in Portuguese" />
 </p>
+<p align="center">
+  <img src="docs/screenshots/item-form.png" width="23%" alt="Edit item form" />
+  <img src="docs/screenshots/item-form-dark-pt.png" width="23%" alt="Edit item form, dark theme in Portuguese" />
+  <img src="docs/screenshots/item-actions.png" width="23%" alt="Item action sheet" />
+  <img src="docs/screenshots/companies-expanded.png" width="23%" alt="Company with sectors expanded" />
+</p>
 
 ## Features
 
