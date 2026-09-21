@@ -16,6 +16,8 @@ between devices through CSV export/import.
 <p align="center">
   <img src="docs/screenshots/home-dark.png" width="23%" alt="Dashboard, dark theme" />
   <img src="docs/screenshots/items-dark.png" width="23%" alt="Items, dark theme" />
+  <img src="docs/screenshots/home-pt.png" width="23%" alt="Dashboard in Portuguese" />
+  <img src="docs/screenshots/items-pt.png" width="23%" alt="Items in Portuguese" />
 </p>
 
 ## Features
@@ -42,8 +44,17 @@ between devices through CSV export/import.
 
 **Settings**
 - Appearance: follow the system, or force light / dark (remembered across launches).
+- Language: **English** and **Português (BR)**; follows the device language by default and can be overridden.
 - CSV export / import (merge by ID, existing rows are kept).
 - Load sample data, or delete all data.
+
+## Design
+
+The UI follows a Vercel / Geist-inspired look: a near-monochrome black-and-white
+palette, hairline borders instead of shadows, tight radii, inverted primary buttons
+and tightly tracked headings. Blue is used only for links; amber and red are reserved
+for stock warnings and destructive actions. Both light and dark themes share the same
+tokens in `src/constants/theme.ts`.
 
 ## Tech stack
 
@@ -69,9 +80,13 @@ src/
 │   ├── useInventory.tsx     # inventory state provider + CRUD
 │   ├── use-theme-preference.tsx # system / light / dark preference
 │   └── use-theme.ts         # resolves the active color palette
+├── i18n/
+│   ├── translations.ts      # English and Portuguese dictionaries
+│   └── index.tsx            # I18nProvider and useT() (interpolation, plurals)
 ├── services/
 │   ├── storage.ts           # AsyncStorage CRUD
 │   ├── stock.ts             # totals, low-stock rules, text normalization
+│   ├── dialog.ts            # confirm / notify (works on native and web)
 │   └── csv.ts               # CSV export/import + BRL formatting
 └── types/index.ts           # Company, Sector, Item, InventoryData
 ```
@@ -137,7 +152,7 @@ sectors/items that reference a missing company or sector are dropped.
 | --- | --- |
 | `npm start` | Start the Expo dev server |
 | `npm run android` / `npm run ios` / `npm run web` | Start on a target platform |
-| `npm run lint` | Run `expo lint` |
+| `npm run lint` | Run ESLint (`eslint-config-expo`) |
 
 ## Builds
 
