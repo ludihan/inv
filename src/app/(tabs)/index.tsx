@@ -11,6 +11,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useTheme } from '@/hooks/use-theme';
 import { useInventory } from '@/hooks/useInventory';
+import { useT } from '@/i18n';
 import { formatBRL } from '@/services/csv';
 import { isLowStock, isOutOfStock, itemTotal, sumQuantity, sumTotal } from '@/services/stock';
 import { BottomTabInset, MaxContentWidth, Radius, Spacing } from '@/constants/theme';
@@ -35,6 +36,7 @@ function Section({ title, action, children }: { title: string; action?: { label:
 export default function HomeScreen() {
   const theme = useTheme();
   const router = useRouter();
+  const { t, plural, locale } = useT();
   const { companies, sectors, items, getCompanyName, getSectorName, loadSampleData } = useInventory();
 
   const totalValue = sumTotal(items);
@@ -79,26 +81,26 @@ export default function HomeScreen() {
       <SafeAreaView style={styles.container}>
         <ScrollView contentContainerStyle={styles.content}>
           <ScreenHeader
-            title="Inventory"
-            subtitle={new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}
+            title={t('home.title')}
+            subtitle={new Date().toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'long' })}
           />
 
           <View style={styles.pad}>
             <View style={[styles.hero, { backgroundColor: theme.primary }]}>
-              <ThemedText type="small" style={styles.heroLabel}>Total inventory value</ThemedText>
+              <ThemedText type="small" style={styles.heroLabel}>{t('home.totalValue')}</ThemedText>
               <ThemedText type="subtitle" style={[styles.heroValue, { color: theme.primaryText }]} adjustsFontSizeToFit numberOfLines={1}>
                 {formatBRL(totalValue)}
               </ThemedText>
               <ThemedText type="small" style={[styles.heroLabel, { color: theme.primaryText }]}>
-                {items.length} items · {totalQuantity} units
+                {plural('items', items.length)} · {plural('units', totalQuantity)}
               </ThemedText>
             </View>
 
             <View style={styles.tiles}>
               {[
-                { label: 'Companies', value: companies.length, icon: ['building.2.fill', 'business'] },
-                { label: 'Sectors', value: sectors.length, icon: ['square.grid.2x2.fill', 'grid_view'] },
-                { label: 'Need restock', value: attention.length, icon: ['exclamationmark.triangle.fill', 'warning'], warn: attention.length > 0 },
+                { label: t('home.companies'), value: companies.length, icon: ['building.2.fill', 'business'] },
+                { label: t('home.sectors'), value: sectors.length, icon: ['square.grid.2x2.fill', 'grid_view'] },
+                { label: t('home.needRestock'), value: attention.length, icon: ['exclamationmark.triangle.fill', 'warning'], warn: attention.length > 0 },
               ].map(t => (
                 <View key={t.label} style={[styles.tile, card]}>
                   <Icon ios={t.icon[0]} material={t.icon[1]} size={18} color={t.warn ? 'warning' : 'primary'} />
@@ -110,19 +112,19 @@ export default function HomeScreen() {
 
             {items.length === 0 && (
               <View style={[styles.empty, card]}>
-                <ThemedText type="subtitle" style={styles.emptyTitle}>Welcome 👋</ThemedText>
+                <ThemedText type="subtitle" style={styles.emptyTitle}>{t('home.welcome')}</ThemedText>
                 <ThemedText type="small" themeColor="textSecondary" style={styles.emptyText}>
-                  Start by adding a company, then its sectors and items. Or explore with demo data.
+                  {t('home.welcomeText')}
                 </ThemedText>
-                <Button label="Add company" onPress={() => router.push('/modal/company-form')} style={styles.stretch} />
+                <Button label={t('home.addCompany')} onPress={() => router.push('/modal/company-form')} style={styles.stretch} />
                 {companies.length === 0 && (
-                  <Button label="Load sample data" variant="secondary" onPress={() => loadSampleData()} style={styles.stretch} />
+                  <Button label={t('home.loadSample')} variant="secondary" onPress={() => loadSampleData()} style={styles.stretch} />
                 )}
               </View>
             )}
 
             {attention.length > 0 && (
-              <Section title="Needs attention" action={{ label: 'View all', onPress: () => router.push({ pathname: '/items', params: { lowStock: '1' } }) }}>
+              <Section title={t('home.attention')} action={{ label: t('home.viewAll'), onPress: () => router.push({ pathname: '/items', params: { lowStock: '1' } }) }}>
                 <View style={[styles.list, card]}>
                   {attention.slice(0, 4).map(item => (
                     <Pressable
@@ -133,10 +135,10 @@ export default function HomeScreen() {
                       <View style={styles.flex}>
                         <ThemedText type="default" numberOfLines={1}>{item.name}</ThemedText>
                         <ThemedText type="small" themeColor="textSecondary">
-                          {item.quantity} left{item.minQuantity ? ` · min ${item.minQuantity}` : ''}
+                          {t('home.left', { count: item.quantity })}{item.minQuantity ? ` · ${t('home.min', { count: item.minQuantity })}` : ''}
                         </ThemedText>
                       </View>
-                      {isOutOfStock(item) ? <Badge label="Out" tone="danger" /> : <Badge label="Low" tone="warning" />}
+                      {isOutOfStock(item) ? <Badge label={t('home.out')} tone="danger" /> : <Badge label={t('home.low')} tone="warning" />}
                     </Pressable>
                   ))}
                 </View>
@@ -144,7 +146,7 @@ export default function HomeScreen() {
             )}
 
             {byCompany.some(b => b.value > 0) && (
-              <Section title="Value by company">
+              <Section title={t('home.byCompany')}>
                 <View style={[styles.list, card, styles.padded]}>
                   {byCompany.map(({ company, value, count }) => {
                     const share = totalValue > 0 ? value / totalValue : 0;
@@ -167,7 +169,7 @@ export default function HomeScreen() {
             )}
 
             {topItems.length > 0 && (
-              <Section title="Most valuable items">
+              <Section title={t('home.topItems')}>
                 <View style={[styles.list, card]}>
                   {topItems.map(item => itemRow(item, formatBRL(itemTotal(item))))}
                 </View>
@@ -175,9 +177,9 @@ export default function HomeScreen() {
             )}
 
             {recent.length > 0 && (
-              <Section title="Recently updated">
+              <Section title={t('home.recent')}>
                 <View style={[styles.list, card]}>
-                  {recent.map(item => itemRow(item, new Date(item.updatedAt).toLocaleDateString('pt-BR')))}
+                  {recent.map(item => itemRow(item, new Date(item.updatedAt).toLocaleDateString(locale)))}
                 </View>
               </Section>
             )}

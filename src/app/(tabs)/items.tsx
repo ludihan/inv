@@ -13,6 +13,7 @@ import { Icon } from '@/components/icon';
 import { ScreenHeader } from '@/components/screen-header';
 import { useTheme } from '@/hooks/use-theme';
 import { useInventory } from '@/hooks/useInventory';
+import { useT } from '@/i18n';
 import { Item } from '@/types';
 import { confirmDestructive } from '@/services/dialog';
 import { formatBRL } from '@/services/csv';
@@ -21,12 +22,7 @@ import { BottomTabInset, MaxContentWidth, Radius, Spacing } from '@/constants/th
 
 type SortKey = 'recent' | 'name' | 'value' | 'quantity';
 
-const SORTS: { key: SortKey; label: string }[] = [
-  { key: 'recent', label: 'Recent' },
-  { key: 'name', label: 'Name' },
-  { key: 'value', label: 'Total value' },
-  { key: 'quantity', label: 'Quantity' },
-];
+const SORTS: SortKey[] = ['recent', 'name', 'value', 'quantity'];
 
 const comparators: Record<SortKey, (a: Item, b: Item) => number> = {
   recent: (a, b) => b.updatedAt.localeCompare(a.updatedAt),
@@ -39,6 +35,7 @@ export default function ItemsScreen() {
   const router = useRouter();
   const theme = useTheme();
   const sheet = useActionSheet();
+  const { t, plural } = useT();
   const params = useLocalSearchParams<{ companyId?: string; sectorId?: string; lowStock?: string }>();
   const {
     items, companies, sectors, removeItem, duplicateItem, adjustQuantity, getCompanyName, getSectorName,
@@ -82,9 +79,9 @@ export default function ItemsScreen() {
 
   const openMenu = (item: Item) => {
     sheet.show(item.name, [
-      { label: 'Edit', onPress: () => handleEditItem(item) },
-      { label: 'Duplicate', onPress: () => duplicateItem(item.id) },
-      { label: 'Delete', destructive: true, onPress: () => confirmDelete(item) },
+      { label: t('edit'), onPress: () => handleEditItem(item) },
+      { label: t('duplicate'), onPress: () => duplicateItem(item.id) },
+      { label: t('delete'), destructive: true, onPress: () => confirmDelete(item) },
     ]);
   };
 
@@ -93,7 +90,7 @@ export default function ItemsScreen() {
   };
 
   const confirmDelete = (item: Item) => {
-    confirmDestructive({ title: 'Delete Item', message: `Are you sure you want to delete "${item.name}"?`, confirmLabel: 'Delete', cancelLabel: 'Cancel', onConfirm: () => removeItem(item.id) });
+    confirmDestructive({ title: t('items.deleteTitle'), message: t('items.deleteMessage', { name: item.name }), confirmLabel: t('delete'), cancelLabel: t('cancel'), onConfirm: () => removeItem(item.id) });
   };
 
   const filteredSectors = selectedCompanyId
@@ -120,12 +117,12 @@ export default function ItemsScreen() {
           style={[styles.searchInput, { color: theme.text }]}
           value={searchQuery}
           onChangeText={setSearchQuery}
-          placeholder="Search name, description or SKU"
+          placeholder={t('items.search')}
           placeholderTextColor={theme.textSecondary}
           returnKeyType="search"
         />
         {searchQuery ? (
-          <Pressable onPress={() => setSearchQuery('')} hitSlop={8} accessibilityLabel="Clear search">
+          <Pressable onPress={() => setSearchQuery('')} hitSlop={8} accessibilityLabel={t('items.clearSearch')}>
             <Icon ios="xmark.circle.fill" material="cancel" size={18} color="textSecondary" />
           </Pressable>
         ) : null}
@@ -138,7 +135,7 @@ export default function ItemsScreen() {
         showsHorizontalScrollIndicator={false}
         style={styles.chipRow}
         ListHeaderComponent={
-          <Chip label="Low stock" tone="warning" selected={lowStockOnly} onPress={() => setLowStockOnly(v => !v)} />
+          <Chip label={t('items.lowStock')} tone="warning" selected={lowStockOnly} onPress={() => setLowStockOnly(v => !v)} />
         }
         renderItem={({ item: company }) => (
           <Chip
@@ -172,22 +169,22 @@ export default function ItemsScreen() {
       <FlatList
         horizontal
         data={SORTS}
-        keyExtractor={s => s.key}
+        keyExtractor={s => s}
         showsHorizontalScrollIndicator={false}
         style={styles.chipRow}
-        ListHeaderComponent={<ThemedText type="small" themeColor="textSecondary" style={styles.sortLabel}>Sort</ThemedText>}
+        ListHeaderComponent={<ThemedText type="small" themeColor="textSecondary" style={styles.sortLabel}>{t('items.sort')}</ThemedText>}
         renderItem={({ item: sort }) => (
-          <Chip label={sort.label} selected={sortKey === sort.key} onPress={() => setSortKey(sort.key)} />
+          <Chip label={t(`items.sort.${sort}` as const)} selected={sortKey === sort} onPress={() => setSortKey(sort)} />
         )}
       />
 
       <View style={styles.summaryRow}>
         <ThemedText type="small" themeColor="textSecondary">
-          {filteredItems.length} {filteredItems.length === 1 ? 'item' : 'items'} · {formatBRL(filteredValue)}
+          {plural('items', filteredItems.length)} · {formatBRL(filteredValue)}
         </ThemedText>
         {hasActiveFilters && (
           <Pressable onPress={clearFilters} hitSlop={8}>
-            <ThemedText type="small" themeColor="primary">Clear filters</ThemedText>
+            <ThemedText type="small" themeColor="primary">{t('items.clearFilters')}</ThemedText>
           </Pressable>
         )}
       </View>
@@ -197,21 +194,19 @@ export default function ItemsScreen() {
   return (
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
-        <ScreenHeader title="Items" subtitle="Long-press an item for more actions" />
+        <ScreenHeader title={t('items.title')} subtitle={t('items.subtitle')} />
 
         {items.length === 0 ? (
           <EmptyState
-            title="No items yet"
+            title={t('items.emptyTitle')}
             message={
-              companies.length === 0
-                ? 'Create a company and a sector first, then add your items.'
-                : 'Add your first item to get started.'
+              companies.length === 0 ? t('items.emptyNoCompanies') : t('items.emptyFirst')
             }
             icon="📦"
             action={
               companies.length === 0
-                ? { label: 'Add company', onPress: () => router.push('/modal/company-form') }
-                : { label: 'Add item', onPress: () => router.push('/modal/item-form') }
+                ? { label: t('home.addCompany'), onPress: () => router.push('/modal/company-form') }
+                : { label: t('items.addItem'), onPress: () => router.push('/modal/item-form') }
             }
           />
         ) : (
@@ -222,7 +217,7 @@ export default function ItemsScreen() {
             keyboardShouldPersistTaps="handled"
             ListHeaderComponent={listHeader}
             ListEmptyComponent={
-              <EmptyState title="No items found" message="Try adjusting your search or filters." icon="🔍" />
+              <EmptyState title={t('items.notFound')} message={t('items.notFoundHint')} icon="🔍" />
             }
             ItemSeparatorComponent={() => <View style={{ height: Spacing.two }} />}
             renderItem={({ item }) => (
@@ -240,7 +235,7 @@ export default function ItemsScreen() {
 
         {items.length > 0 && (
           <Pressable
-            accessibilityLabel="Add item"
+            accessibilityLabel={t('items.addItem')}
             style={({ pressed }) => [styles.fab, { backgroundColor: theme.primary, opacity: pressed ? 0.85 : 1 }]}
             onPress={() => router.push('/modal/item-form')}
           >

@@ -6,6 +6,7 @@ import { Badge } from '@/components/badge';
 import { Icon } from '@/components/icon';
 import { Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { useT } from '@/i18n';
 import { formatBRL } from '@/services/csv';
 import { isLowStock, isOutOfStock, itemQuantity, itemTotal } from '@/services/stock';
 
@@ -41,6 +42,7 @@ function StepButton({ material, ios, label, onPress, disabled }: {
 
 export function ItemCard({ item, companyName, sectorName, onPress, onLongPress, onAdjustQuantity }: ItemCardProps) {
   const theme = useTheme();
+  const { t } = useT();
   const quantity = itemQuantity(item);
   const out = isOutOfStock(item);
   const low = isLowStock(item);
@@ -65,7 +67,7 @@ export function ItemCard({ item, companyName, sectorName, onPress, onLongPress, 
         </View>
         <View style={styles.totals}>
           <ThemedText type="default" style={styles.total}>{formatBRL(itemTotal(item))}</ThemedText>
-          <ThemedText type="small" themeColor="textSecondary">{formatBRL(item.value)} each</ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">{t('items.each', { value: formatBRL(item.value) })}</ThemedText>
         </View>
       </View>
 
@@ -77,13 +79,13 @@ export function ItemCard({ item, companyName, sectorName, onPress, onLongPress, 
         <View style={styles.tags}>
           <Badge label={companyName} tone="primary" />
           <Badge label={sectorName} />
-          {out ? <Badge label="Out of stock" tone="danger" /> : low ? <Badge label="Low stock" tone="warning" /> : null}
+          {out ? <Badge label={t('items.outOfStock')} tone="danger" /> : low ? <Badge label={t('items.lowStock')} tone="warning" /> : null}
         </View>
         {onAdjustQuantity && (
           <View style={styles.stepper}>
-            <StepButton ios="minus" material="remove" label="Decrease quantity" disabled={quantity === 0} onPress={() => onAdjustQuantity(item, -1)} />
+            <StepButton ios="minus" material="remove" label={t('items.decrease')} disabled={quantity === 0} onPress={() => onAdjustQuantity(item, -1)} />
             <ThemedText type="default" style={styles.quantity}>{quantity}</ThemedText>
-            <StepButton ios="plus" material="add" label="Increase quantity" onPress={() => onAdjustQuantity(item, 1)} />
+            <StepButton ios="plus" material="add" label={t('items.increase')} onPress={() => onAdjustQuantity(item, 1)} />
           </View>
         )}
       </View>

@@ -146,11 +146,13 @@ export async function importFromCSV(): Promise<InventoryData | null> {
   return { companies, sectors, items };
 }
 
-export async function importAndMergeCSV(): Promise<{ imported: boolean; message: string }> {
+export async function importAndMergeCSV(): Promise<
+  { imported: false } | { imported: true; companies: number; sectors: number; items: number }
+> {
   const data = await importFromCSV();
   
   if (!data) {
-    return { imported: false, message: 'Import cancelled' };
+    return { imported: false };
   }
   
   const currentData = await getAllData();
@@ -193,7 +195,9 @@ export async function importAndMergeCSV(): Promise<{ imported: boolean; message:
   
   return {
     imported: true,
-    message: `Imported ${newCompanies.length} companies, ${newSectors.length} sectors, ${newItems.length} items`,
+    companies: newCompanies.length,
+    sectors: newSectors.length,
+    items: newItems.length,
   };
 }
 

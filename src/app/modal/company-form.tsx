@@ -7,9 +7,11 @@ import { TextField } from '@/components/text-field';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useInventory } from '@/hooks/useInventory';
+import { useT } from '@/i18n';
 
 export default function CompanyFormModal() {
   const router = useRouter();
+  const { t } = useT();
   const { addCompany, editCompany } = useInventory();
 
   const params = useLocalSearchParams<{ companyId?: string; companyName?: string }>();
@@ -30,21 +32,21 @@ export default function CompanyFormModal() {
   return (
     <ThemedView style={styles.container}>
       <KeyboardAwareScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-        <ThemedText type="subtitle">{isEditing ? 'Edit company' : 'New company'}</ThemedText>
+        <ThemedText type="subtitle">{isEditing ? t('form.editCompany') : t('form.newCompany')}</ThemedText>
 
         <TextField
-          label="Company name *"
+          label={t('form.companyName')}
           value={name}
           onChangeText={setName}
-          placeholder="Company name"
+          placeholder={t('form.companyNamePlaceholder')}
           autoFocus={!isEditing}
           returnKeyType="done"
           onSubmitEditing={handleSubmit}
         />
 
         <View style={styles.buttons}>
-          <Button label="Cancel" variant="secondary" onPress={() => router.back()} style={styles.flex} />
-          <Button label={isEditing ? 'Save' : 'Add'} onPress={handleSubmit} disabled={!isValid} style={styles.flex} />
+          <Button label={t('cancel')} variant="secondary" onPress={() => router.back()} style={styles.flex} />
+          <Button label={isEditing ? t('save') : t('add')} onPress={handleSubmit} disabled={!isValid} style={styles.flex} />
         </View>
       </KeyboardAwareScrollView>
     </ThemedView>

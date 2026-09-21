@@ -8,9 +8,11 @@ import { TextField } from '@/components/text-field';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useInventory } from '@/hooks/useInventory';
+import { useT } from '@/i18n';
 
 export default function SectorFormModal() {
   const router = useRouter();
+  const { t } = useT();
   const { addSector, editSector, getCompanyName } = useInventory();
 
   const params = useLocalSearchParams<{ companyId?: string; sectorId?: string; sectorName?: string }>();
@@ -33,23 +35,23 @@ export default function SectorFormModal() {
     <ThemedView style={styles.container}>
       <KeyboardAwareScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <View style={styles.titleBlock}>
-          <ThemedText type="subtitle">{isEditing ? 'Edit sector' : 'New sector'}</ThemedText>
+          <ThemedText type="subtitle">{isEditing ? t('form.editSector') : t('form.newSector')}</ThemedText>
           {companyName ? <Badge label={companyName} tone="primary" /> : null}
         </View>
 
         <TextField
-          label="Sector name *"
+          label={t('form.sectorName')}
           value={name}
           onChangeText={setName}
-          placeholder="e.g. T.I., RH, Financeiro"
+          placeholder={t('form.sectorNamePlaceholder')}
           autoFocus={!isEditing}
           returnKeyType="done"
           onSubmitEditing={handleSubmit}
         />
 
         <View style={styles.buttons}>
-          <Button label="Cancel" variant="secondary" onPress={() => router.back()} style={styles.flex} />
-          <Button label={isEditing ? 'Save' : 'Add'} onPress={handleSubmit} disabled={!isValid} style={styles.flex} />
+          <Button label={t('cancel')} variant="secondary" onPress={() => router.back()} style={styles.flex} />
+          <Button label={isEditing ? t('save') : t('add')} onPress={handleSubmit} disabled={!isValid} style={styles.flex} />
         </View>
       </KeyboardAwareScrollView>
     </ThemedView>

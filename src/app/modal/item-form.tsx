@@ -14,10 +14,12 @@ import { formatBRL } from '@/services/csv';
 import { Radius } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { useInventory } from '@/hooks/useInventory';
+import { useT } from '@/i18n';
 
 export default function ItemFormModal() {
   const router = useRouter();
   const theme = useTheme();
+  const { t } = useT();
   const { companies, sectors, items, addItem, editItem, removeItem } = useInventory();
   
   const params = useLocalSearchParams<{
@@ -92,10 +94,10 @@ export default function ItemFormModal() {
   const handleDelete = () => {
     if (!params.itemId) return;
     confirmDestructive({
-      title: 'Delete Item',
-      message: `Are you sure you want to delete "${name}"?`,
-      confirmLabel: 'Delete',
-      cancelLabel: 'Cancel',
+      title: t('items.deleteTitle'),
+      message: t('items.deleteMessage', { name }),
+      confirmLabel: t('delete'),
+      cancelLabel: t('cancel'),
       onConfirm: async () => {
         await removeItem(params.itemId!);
         router.back();
@@ -111,34 +113,34 @@ export default function ItemFormModal() {
   return (
     <ThemedView style={styles.container}>
       <KeyboardAwareScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-        <ThemedText type="subtitle">{isEditing ? 'Edit item' : 'New item'}</ThemedText>
+        <ThemedText type="subtitle">{isEditing ? t('form.editItem') : t('form.newItem')}</ThemedText>
 
-        <TextField label="Name *" value={name} onChangeText={setName} placeholder="Item name" />
+        <TextField label={t('form.name')} value={name} onChangeText={setName} placeholder={t('form.namePlaceholder')} />
         <TextField
-          label="Description"
+          label={t('form.description')}
           value={description}
           onChangeText={setDescription}
-          placeholder="Optional description"
+          placeholder={t('form.descriptionPlaceholder')}
           multiline
         />
         <TextField
-          label="SKU / asset tag"
+          label={t('form.sku')}
           value={sku}
           onChangeText={setSku}
-          placeholder="Optional"
+          placeholder={t('form.optional')}
           autoCapitalize="characters"
         />
 
         <View style={styles.field}>
-          <ThemedText type="small" themeColor="textSecondary">Unit value (R$) *</ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">{t('form.unitValue')}</ThemedText>
           <CurrencyInput value={value} onChangeText={setValue} />
         </View>
 
         <View style={styles.field}>
-          <ThemedText type="small" themeColor="textSecondary">Quantity *</ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">{t('form.quantity')}</ThemedText>
           <View style={styles.stepperRow}>
             <Pressable
-              accessibilityLabel="Decrease quantity"
+              accessibilityLabel={t('items.decrease')}
               style={[styles.stepBtn, { backgroundColor: theme.backgroundSelected }]}
               onPress={() => setQuantity(q => Math.max(0, q - 1))}
             >
@@ -152,7 +154,7 @@ export default function ItemFormModal() {
               textAlign="center"
             />
             <Pressable
-              accessibilityLabel="Increase quantity"
+              accessibilityLabel={t('items.increase')}
               style={[styles.stepBtn, { backgroundColor: theme.backgroundSelected }]}
               onPress={() => setQuantity(q => q + 1)}
             >
@@ -162,7 +164,7 @@ export default function ItemFormModal() {
         </View>
 
         <View style={styles.field}>
-          <ThemedText type="small" themeColor="textSecondary">Low-stock alert at (0 = off)</ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">{t('form.lowStockAlert')}</ThemedText>
           <TextInput
             style={[styles.qtyInput, styles.minInput, { backgroundColor: theme.backgroundElement, borderColor: theme.border, color: theme.text }]}
             value={String(minQuantity)}
@@ -172,16 +174,16 @@ export default function ItemFormModal() {
         </View>
 
         <View style={[styles.totalBox, { backgroundColor: theme.primaryMuted }]}>
-          <ThemedText type="small" themeColor="primary">Total value</ThemedText>
+          <ThemedText type="small" themeColor="primary">{t('form.totalValue')}</ThemedText>
           <ThemedText type="default" themeColor="primary" style={styles.totalText}>
             {formatBRL(value * quantity)}
           </ThemedText>
         </View>
 
         <View style={styles.field}>
-          <ThemedText type="small" themeColor="textSecondary">Company *</ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">{t('form.company')}</ThemedText>
           {companies.length === 0 ? (
-            <Button label="Add a company first" variant="secondary" onPress={() => router.push('/modal/company-form')} />
+            <Button label={t('form.addCompanyFirst')} variant="secondary" onPress={() => router.push('/modal/company-form')} />
           ) : (
             <ScrollView horizontal showsHorizontalScrollIndicator={false} keyboardShouldPersistTaps="handled">
               {companies.map(company => (
@@ -200,7 +202,7 @@ export default function ItemFormModal() {
         </View>
 
         <View style={styles.field}>
-          <ThemedText type="small" themeColor="textSecondary">Sector *</ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">{t('form.sector')}</ThemedText>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} keyboardShouldPersistTaps="handled">
             {filteredSectors.map(sector => (
               <Chip
@@ -213,7 +215,7 @@ export default function ItemFormModal() {
           </ScrollView>
           {selectedCompanyId !== '' && filteredSectors.length === 0 && (
             <Button
-              label="Add a sector to this company"
+              label={t('form.addSectorToCompany')}
               variant="secondary"
               onPress={() => router.push({ pathname: '/modal/sector-form', params: { companyId: selectedCompanyId } })}
             />
@@ -221,10 +223,10 @@ export default function ItemFormModal() {
         </View>
 
         <View style={styles.buttons}>
-          <Button label="Cancel" variant="secondary" onPress={() => router.back()} style={styles.flex} />
-          <Button label={isEditing ? 'Save' : 'Add'} onPress={handleSubmit} disabled={!isValid} style={styles.flex} />
+          <Button label={t('cancel')} variant="secondary" onPress={() => router.back()} style={styles.flex} />
+          <Button label={isEditing ? t('save') : t('add')} onPress={handleSubmit} disabled={!isValid} style={styles.flex} />
         </View>
-        {isEditing && <Button label="Delete item" variant="danger" onPress={handleDelete} />}
+        {isEditing && <Button label={t('form.deleteItem')} variant="danger" onPress={handleDelete} />}
       </KeyboardAwareScrollView>
     </ThemedView>
   );

@@ -5,6 +5,7 @@ import { ThemedText } from '@/components/themed-text';
 import { Icon } from '@/components/icon';
 import { Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { useT } from '@/i18n';
 import { formatBRL } from '@/services/csv';
 import { sumQuantity, sumTotal } from '@/services/stock';
 
@@ -23,6 +24,7 @@ export function CompanyCard({
   company, sectors, items, onPress, onMenu, onAddSector, onPressSector, onMenuSector,
 }: CompanyCardProps) {
   const theme = useTheme();
+  const { t, plural } = useT();
   const [expanded, setExpanded] = useState(false);
 
   return (
@@ -36,10 +38,10 @@ export function CompanyCard({
         <Pressable style={styles.headerContent} onPress={() => onPress(company)}>
           <ThemedText type="default" numberOfLines={1} style={styles.name}>{company.name}</ThemedText>
           <ThemedText type="small" themeColor="textSecondary">
-            {items.length} items · {sumQuantity(items)} units · {formatBRL(sumTotal(items))}
+            {plural('items', items.length)} · {plural('units', sumQuantity(items))} · {formatBRL(sumTotal(items))}
           </ThemedText>
         </Pressable>
-        <Pressable onPress={() => onMenu(company)} hitSlop={10} accessibilityLabel="Company actions">
+        <Pressable onPress={() => onMenu(company)} hitSlop={10} accessibilityLabel={t('companies.actions')}>
           <Icon ios="ellipsis" material="more_horiz" color="textSecondary" />
         </Pressable>
       </View>
@@ -49,7 +51,7 @@ export function CompanyCard({
         onPress={() => setExpanded(!expanded)}
       >
         <ThemedText type="small" themeColor="textSecondary">
-          {sectors.length} {sectors.length === 1 ? 'sector' : 'sectors'}
+          {plural('sectors', sectors.length)}
         </ThemedText>
         <Icon
           ios={expanded ? 'chevron.up' : 'chevron.down'}
@@ -76,10 +78,10 @@ export function CompanyCard({
                 <View style={styles.flex}>
                   <ThemedText type="small" style={styles.name}>{sector.name}</ThemedText>
                   <ThemedText type="small" themeColor="textSecondary">
-                    {sectorItems.length} items · {formatBRL(sumTotal(sectorItems))}
+                    {plural('items', sectorItems.length)} · {formatBRL(sumTotal(sectorItems))}
                   </ThemedText>
                 </View>
-                <Pressable onPress={() => onMenuSector(sector)} hitSlop={10} accessibilityLabel="Sector actions">
+                <Pressable onPress={() => onMenuSector(sector)} hitSlop={10} accessibilityLabel={t('companies.sectorActions')}>
                   <Icon ios="ellipsis" material="more_horiz" size={18} color="textSecondary" />
                 </Pressable>
               </Pressable>
@@ -91,7 +93,7 @@ export function CompanyCard({
             onPress={() => onAddSector(company.id)}
           >
             <Icon ios="plus" material="add" size={16} color="primary" />
-            <ThemedText type="small" themeColor="primary">Add sector</ThemedText>
+            <ThemedText type="small" themeColor="primary">{t('companies.addSector')}</ThemedText>
           </Pressable>
         </View>
       )}

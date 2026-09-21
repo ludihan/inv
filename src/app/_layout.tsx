@@ -6,6 +6,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { I18nProvider, useT } from '@/i18n';
 import { ThemePreferenceProvider } from '@/hooks/use-theme-preference';
 import { InventoryProvider } from '@/hooks/useInventory';
 
@@ -14,13 +15,16 @@ SplashScreen.preventAutoHideAsync();
 export default function RootLayout() {
   return (
     <ThemePreferenceProvider>
-      <RootStack />
+      <I18nProvider>
+        <RootStack />
+      </I18nProvider>
     </ThemePreferenceProvider>
   );
 }
 
 function RootStack() {
   const colorScheme = useColorScheme();
+  const { t } = useT();
   const colors = Colors[colorScheme === 'dark' ? 'dark' : 'light'];
   const base = colorScheme === 'dark' ? DarkTheme : DefaultTheme;
   const navTheme = {
@@ -46,22 +50,22 @@ function RootStack() {
             name="modal/item-form" 
             options={{ 
               presentation: 'modal',
-              title: 'Item',
-              headerBackTitle: 'Back',
+              title: t('nav.item'),
+              headerBackTitle: t('nav.back'),
             }} 
           />
           <Stack.Screen 
             name="modal/company-form" 
             options={{ 
               presentation: 'modal',
-              title: 'Company',
+              title: t('nav.company'),
             }} 
           />
           <Stack.Screen 
             name="modal/sector-form" 
             options={{ 
               presentation: 'modal',
-              title: 'Sector',
+              title: t('nav.sector'),
             }} 
           />
         </Stack>

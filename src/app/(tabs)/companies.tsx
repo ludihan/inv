@@ -11,6 +11,7 @@ import { Icon } from '@/components/icon';
 import { ScreenHeader } from '@/components/screen-header';
 import { useTheme } from '@/hooks/use-theme';
 import { useInventory } from '@/hooks/useInventory';
+import { useT } from '@/i18n';
 import { confirmDestructive } from '@/services/dialog';
 import { Company, Sector } from '@/types';
 import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
@@ -19,6 +20,7 @@ export default function CompaniesScreen() {
   const router = useRouter();
   const theme = useTheme();
   const sheet = useActionSheet();
+  const { t } = useT();
   const { companies, removeCompany, removeSector, getSectorsByCompany, getItemsByCompany } = useInventory();
   
   const handleEditCompany = (company: Company) => {
@@ -29,23 +31,23 @@ export default function CompaniesScreen() {
   };
   
   const handleDeleteCompany = (company: Company) => {
-    confirmDestructive({ title: 'Delete Company', message: `Are you sure you want to delete "${company.name}"? This will also delete all sectors and items in this company.`, confirmLabel: 'Delete', cancelLabel: 'Cancel', onConfirm: () => removeCompany(company.id) });
+    confirmDestructive({ title: t('companies.deleteTitle'), message: t('companies.deleteMessage', { name: company.name }), confirmLabel: t('delete'), cancelLabel: t('cancel'), onConfirm: () => removeCompany(company.id) });
   };
   
   const openCompanyMenu = (company: Company) => {
     sheet.show(company.name, [
-      { label: 'View items', onPress: () => router.push({ pathname: '/items', params: { companyId: company.id } }) },
-      { label: 'Add sector', onPress: () => handleAddSector(company.id) },
-      { label: 'Rename', onPress: () => handleEditCompany(company) },
-      { label: 'Delete', destructive: true, onPress: () => handleDeleteCompany(company) },
+      { label: t('companies.viewItems'), onPress: () => router.push({ pathname: '/items', params: { companyId: company.id } }) },
+      { label: t('companies.addSector'), onPress: () => handleAddSector(company.id) },
+      { label: t('rename'), onPress: () => handleEditCompany(company) },
+      { label: t('delete'), destructive: true, onPress: () => handleDeleteCompany(company) },
     ]);
   };
 
   const openSectorMenu = (sector: Sector) => {
     sheet.show(sector.name, [
-      { label: 'View items', onPress: () => router.push({ pathname: '/items', params: { companyId: sector.companyId, sectorId: sector.id } }) },
-      { label: 'Rename', onPress: () => handleEditSector(sector) },
-      { label: 'Delete', destructive: true, onPress: () => handleDeleteSector(sector) },
+      { label: t('companies.viewItems'), onPress: () => router.push({ pathname: '/items', params: { companyId: sector.companyId, sectorId: sector.id } }) },
+      { label: t('rename'), onPress: () => handleEditSector(sector) },
+      { label: t('delete'), destructive: true, onPress: () => handleDeleteSector(sector) },
     ]);
   };
 
@@ -72,21 +74,21 @@ export default function CompaniesScreen() {
   };
   
   const handleDeleteSector = (sector: Sector) => {
-    confirmDestructive({ title: 'Delete Sector', message: `Are you sure you want to delete "${sector.name}"? This will also delete all items in this sector.`, confirmLabel: 'Delete', cancelLabel: 'Cancel', onConfirm: () => removeSector(sector.id) });
+    confirmDestructive({ title: t('companies.deleteSectorTitle'), message: t('companies.deleteSectorMessage', { name: sector.name }), confirmLabel: t('delete'), cancelLabel: t('cancel'), onConfirm: () => removeSector(sector.id) });
   };
 
   return (
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
-        <ScreenHeader title="Companies" subtitle="Tap a company for its sectors and totals" />
+        <ScreenHeader title={t('companies.title')} subtitle={t('companies.subtitle')} />
         
         {/* Companies List */}
         {companies.length === 0 ? (
           <EmptyState
-            title="No companies yet"
-            message="Companies group your sectors and items. Add your first one to get started."
+            title={t('companies.emptyTitle')}
+            message={t('companies.emptyMessage')}
             icon="🏢"
-            action={{ label: 'Add company', onPress: handleAddCompany }}
+            action={{ label: t('companies.addCompany'), onPress: handleAddCompany }}
           />
         ) : (
           <FlatList
@@ -112,7 +114,7 @@ export default function CompaniesScreen() {
         
         {companies.length > 0 && (
           <Pressable
-            accessibilityLabel="Add company"
+            accessibilityLabel={t('companies.addCompany')}
             style={({ pressed }) => [styles.fab, { backgroundColor: theme.primary, opacity: pressed ? 0.85 : 1 }]}
             onPress={handleAddCompany}
           >

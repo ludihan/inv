@@ -4,6 +4,7 @@ import { Modal, Pressable, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { useT } from '@/i18n';
 
 export interface SheetAction {
   label: string;
@@ -22,6 +23,7 @@ interface SheetState {
  */
 export function useActionSheet() {
   const theme = useTheme();
+  const { t } = useT();
   const [sheet, setSheet] = useState<SheetState | null>(null);
 
   const close = useCallback(() => setSheet(null), []);
@@ -54,7 +56,7 @@ export function useActionSheet() {
           ))}
           <View style={[styles.gap, { backgroundColor: theme.background }]} />
           <Pressable style={styles.action} onPress={close} accessibilityRole="button">
-            <ThemedText type="default" themeColor="textSecondary">Cancel</ThemedText>
+            <ThemedText type="default" themeColor="textSecondary">{t('cancel')}</ThemedText>
           </Pressable>
         </Pressable>
       </Pressable>

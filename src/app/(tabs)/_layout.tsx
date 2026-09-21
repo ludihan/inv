@@ -3,9 +3,11 @@ import { SymbolView } from 'expo-symbols';
 
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useT } from '@/i18n';
 
 export default function TabLayout() {
   const scheme = useColorScheme();
+  const { t } = useT();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
 
   return (
@@ -28,7 +30,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
+          title: t('tab.home'),
           tabBarIcon: ({ color, size }) => (
             <SymbolView
               name={{ ios: 'house.fill', android: 'home', web: 'home' }}
@@ -41,7 +43,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="items"
         options={{
-          title: 'Items',
+          title: t('tab.items'),
           tabBarIcon: ({ color, size }) => (
             <SymbolView
               name={{ ios: 'shippingbox.fill', android: 'inventory_2', web: 'inventory_2' }}
@@ -54,7 +56,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="companies"
         options={{
-          title: 'Companies',
+          title: t('tab.companies'),
           tabBarIcon: ({ color, size }) => (
             <SymbolView
               name={{ ios: 'building.2.fill', android: 'business', web: 'business' }}
@@ -67,7 +69,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="settings"
         options={{
-          title: 'Settings',
+          title: t('tab.settings'),
           tabBarIcon: ({ color, size }) => (
             <SymbolView
               name={{ ios: 'gearshape.fill', android: 'settings', web: 'settings' }}

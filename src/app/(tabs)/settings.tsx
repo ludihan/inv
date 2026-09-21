@@ -12,14 +12,16 @@ import { BottomTabInset, MaxContentWidth, Radius, Spacing } from '@/constants/th
 import { useTheme } from '@/hooks/use-theme';
 import { useThemePreference } from '@/hooks/use-theme-preference';
 import { useInventory } from '@/hooks/useInventory';
+import { useT } from '@/i18n';
 import { exportToCSV, importAndMergeCSV } from '@/services/csv';
 import { confirmDestructive, notify } from '@/services/dialog';
-import type { ThemePreference } from '@/services/storage';
+import type { LanguagePreference, ThemePreference } from '@/services/storage';
 
-const THEME_OPTIONS: { value: ThemePreference; label: string }[] = [
-  { value: 'system', label: 'System' },
-  { value: 'light', label: 'Light' },
-  { value: 'dark', label: 'Dark' },
+const THEMES: ThemePreference[] = ['system', 'light', 'dark'];
+const LANGUAGES: { value: LanguagePreference; label: string }[] = [
+  { value: 'system', label: 'Auto' },
+  { value: 'en', label: 'English' },
+  { value: 'pt', label: 'Português' },
 ];
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
@@ -38,13 +40,14 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 export default function SettingsScreen() {
   const { preference, setPreference } = useThemePreference();
+  const { t, plural, preference: languagePref, setPreference: setLanguagePref } = useT();
   const { items, companies, reload, clearAll, loadSampleData } = useInventory();
 
   const handleExport = async () => {
     try {
       await exportToCSV();
     } catch (e: any) {
-      notify('Error', e.message || 'Failed to export.');
+      notify(t('error'), e.message || t('settings.exportFailed'));
     }
   };
 
@@ -53,62 +56,81 @@ export default function SettingsScreen() {
       const result = await importAndMergeCSV();
       if (result.imported) {
         await reload();
-        notify('Imported', result.message);
+        notify(
+          t('settings.imported'),
+          t('settings.importedMessage', {
+            companies: plural('companies', result.companies),
+            sectors: plural('sectors', result.sectors),
+            items: plural('items', result.items),
+          }),
+        );
       }
     } catch (e: any) {
-      notify('Error', e.message || 'Failed to import.');
+      notify(t('error'), e.message || t('settings.importFailed'));
     }
   };
 
   const handleClear = () => {
     confirmDestructive({
-      title: 'Delete all data',
-      message: 'This permanently removes every company, sector and item on this device. Export a CSV first if you want a backup.',
-      confirmLabel: 'Delete everything',
-      cancelLabel: 'Cancel',
+      title: t('settings.deleteAll'),
+      message: t('settings.deleteAllMessage'),
+      confirmLabel: t('settings.deleteEverything'),
+      cancelLabel: t('cancel'),
       onConfirm: () => clearAll(),
     });
   };
 
   const handleSample = async () => {
     await loadSampleData();
-    notify('Sample data added', 'A demo company with a few items was created.');
+    notify(t('settings.sampleAdded'), t('settings.sampleAddedMessage'));
   };
 
   return (
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.container}>
         <ScrollView contentContainerStyle={styles.content}>
-          <ScreenHeader title="Settings" subtitle="Appearance, backup and data" />
+          <ScreenHeader title={t('settings.title')} subtitle={t('settings.subtitle')} />
 
-          <Section title="Appearance">
+          <Section title={t('settings.appearance')}>
             <View style={styles.chips}>
-              {THEME_OPTIONS.map(o => (
+              {THEMES.map(value => (
                 <Chip
-                  key={o.value}
-                  label={o.label}
-                  selected={preference === o.value}
-                  onPress={() => setPreference(o.value)}
+                  key={value}
+                  label={t(`settings.${value}` as const)}
+                  selected={preference === value}
+                  onPress={() => setPreference(value)}
                 />
               ))}
             </View>
           </Section>
 
-          <Section title="Backup">
+          <Section title={t('settings.language')}>
+            <View style={styles.chips}>
+              {LANGUAGES.map(o => (
+                <Chip
+                  key={o.value}
+                  label={o.value === 'system' ? t('settings.system') : o.label}
+                  selected={languagePref === o.value}
+                  onPress={() => setLanguagePref(o.value)}
+                />
+              ))}
+            </View>
+          </Section>
+
+          <Section title={t('settings.backup')}>
             <ThemedText type="small" themeColor="textSecondary">
-              Data lives on this device. Export a CSV to back it up or move it to another device;
-              importing merges by ID and never overwrites existing rows.
+              {t('settings.backupText')}
             </ThemedText>
             <View style={styles.row}>
               <Button
-                label="Export"
+                label={t('settings.export')}
                 variant="secondary"
                 icon={{ ios: 'square.and.arrow.up', material: 'file_upload' }}
                 onPress={handleExport}
                 style={styles.flex}
               />
               <Button
-                label="Import"
+                label={t('settings.import')}
                 variant="secondary"
                 icon={{ ios: 'square.and.arrow.down', material: 'file_download' }}
                 onPress={handleImport}
@@ -117,12 +139,12 @@ export default function SettingsScreen() {
             </View>
           </Section>
 
-          <Section title="Data">
+          <Section title={t('settings.data')}>
             <ThemedText type="small" themeColor="textSecondary">
-              {companies.length} companies · {items.length} items stored.
+              {t('settings.stored', { companies: plural('companies', companies.length), items: plural('items', items.length) })}
             </ThemedText>
-            <Button label="Add sample data" variant="secondary" onPress={handleSample} />
-            <Button label="Delete all data" variant="danger" onPress={handleClear} disabled={companies.length === 0} />
+            <Button label={t('settings.addSample')} variant="secondary" onPress={handleSample} />
+            <Button label={t('settings.deleteAll')} variant="danger" onPress={handleClear} disabled={companies.length === 0} />
           </Section>
 
           <ThemedText type="small" themeColor="textSecondary" style={styles.version}>

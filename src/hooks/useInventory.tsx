@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef, type ReactNode } from 'react';
 import { Company, Sector, Item, InventoryData } from '@/types';
 import * as storage from '@/services/storage';
+import { useT } from '@/i18n';
 import { sumQuantity, sumTotal } from '@/services/stock';
 
 interface InventoryContextValue {
@@ -38,6 +39,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
   const [sectors, setSectors] = useState<Sector[]>([]);
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
+  const { t } = useT();
   const itemsRef = useRef<Item[]>([]);
   useEffect(() => {
     itemsRef.current = items;
@@ -198,12 +200,12 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
   }, [sectors]);
 
   const getCompanyName = useCallback((companyId: string) => {
-    return companies.find(c => c.id === companyId)?.name || 'Unknown';
-  }, [companies]);
+    return companies.find(c => c.id === companyId)?.name || t('unknown');
+  }, [companies, t]);
 
   const getSectorName = useCallback((sectorId: string) => {
-    return sectors.find(s => s.id === sectorId)?.name || 'Unknown';
-  }, [sectors]);
+    return sectors.find(s => s.id === sectorId)?.name || t('unknown');
+  }, [sectors, t]);
 
   return (
     <InventoryContext.Provider
