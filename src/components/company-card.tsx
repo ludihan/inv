@@ -92,8 +92,8 @@ export function CompanyCard({
             style={[styles.addSectorButton, { borderColor: theme.border }]}
             onPress={() => onAddSector(company.id)}
           >
-            <Icon ios="plus" material="add" size={16} color="primary" />
-            <ThemedText type="small" themeColor="primary">{t('companies.addSector')}</ThemedText>
+            <Icon ios="plus" material="add" size={16} color="link" />
+            <ThemedText type="small" themeColor="link">{t('companies.addSector')}</ThemedText>
           </Pressable>
         </View>
       )}
@@ -104,7 +104,7 @@ export function CompanyCard({
 const styles = StyleSheet.create({
   container: { borderRadius: Radius.lg, borderWidth: 1, overflow: 'hidden' },
   header: { flexDirection: 'row', alignItems: 'center', padding: Spacing.three, gap: Spacing.three },
-  avatar: { width: 44, height: 44, borderRadius: Radius.md, alignItems: 'center', justifyContent: 'center' },
+  avatar: { width: 40, height: 40, borderRadius: Radius.lg, borderWidth: 1, borderColor: 'transparent', alignItems: 'center', justifyContent: 'center' },
   avatarText: { fontWeight: 700, fontSize: 18 },
   headerContent: { flex: 1 },
   name: { fontWeight: 600 },

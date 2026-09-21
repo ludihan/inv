@@ -103,6 +103,6 @@ const styles = StyleSheet.create({
   footer: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: Spacing.two },
   tags: { flex: 1, flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   stepper: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
-  step: { width: 30, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
+  step: { width: 30, height: 30, borderRadius: Radius.md, alignItems: 'center', justifyContent: 'center' },
   quantity: { minWidth: 28, textAlign: 'center', fontWeight: 700 },
 });

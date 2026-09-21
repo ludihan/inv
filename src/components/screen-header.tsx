@@ -24,5 +24,5 @@ const styles = StyleSheet.create({
     paddingTop: Spacing.three,
     paddingBottom: Spacing.three,
   },
-  title: { fontSize: 30, lineHeight: 38, fontWeight: 700 },
+  title: { fontSize: 30, lineHeight: 38, fontWeight: 700, letterSpacing: -1 },
 });

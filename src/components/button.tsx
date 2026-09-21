@@ -21,7 +21,7 @@ export function Button({ label, onPress, variant = 'primary', icon, disabled, st
   const palette = {
     primary: { bg: theme.primary, fg: 'primaryText' as const, border: theme.primary },
     secondary: { bg: theme.backgroundElement, fg: 'text' as const, border: theme.border },
-    danger: { bg: theme.dangerMuted, fg: 'danger' as const, border: theme.dangerMuted },
+    danger: { bg: theme.backgroundElement, fg: 'danger' as const, border: theme.danger },
     ghost: { bg: 'transparent', fg: 'primary' as const, border: 'transparent' },
   }[variant];
 
@@ -61,5 +61,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   row: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
-  label: { fontWeight: 600 },
+  label: { fontWeight: 500 },
 });

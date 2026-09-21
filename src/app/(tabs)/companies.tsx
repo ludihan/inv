@@ -14,7 +14,7 @@ import { useInventory } from '@/hooks/useInventory';
 import { useT } from '@/i18n';
 import { confirmDestructive } from '@/services/dialog';
 import { Company, Sector } from '@/types';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
+import { BottomTabInset, MaxContentWidth, Radius, Spacing } from '@/constants/theme';
 
 export default function CompaniesScreen() {
   const router = useRouter();
@@ -148,13 +148,13 @@ const styles = StyleSheet.create({
     bottom: BottomTabInset + Spacing.four,
     width: 56,
     height: 56,
-    borderRadius: 28,
+    borderRadius: Radius.xl,
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 4,
+    elevation: 0,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
+    shadowOpacity: 0,
     shadowRadius: 4,
   },
 });

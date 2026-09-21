@@ -24,7 +24,7 @@ function Section({ title, action, children }: { title: string; action?: { label:
         <ThemedText type="default" style={styles.sectionTitle}>{title}</ThemedText>
         {action && (
           <Pressable onPress={action.onPress} hitSlop={8}>
-            <ThemedText type="small" themeColor="primary">{action.label}</ThemedText>
+            <ThemedText type="small" themeColor="link">{action.label}</ThemedText>
           </Pressable>
         )}
       </View>
@@ -86,12 +86,12 @@ export default function HomeScreen() {
           />
 
           <View style={styles.pad}>
-            <View style={[styles.hero, { backgroundColor: theme.primary }]}>
-              <ThemedText type="small" style={styles.heroLabel}>{t('home.totalValue')}</ThemedText>
-              <ThemedText type="subtitle" style={[styles.heroValue, { color: theme.primaryText }]} adjustsFontSizeToFit numberOfLines={1}>
+            <View style={[styles.hero, card]}>
+              <ThemedText type="small" themeColor="textSecondary">{t('home.totalValue')}</ThemedText>
+              <ThemedText type="subtitle" style={styles.heroValue} adjustsFontSizeToFit numberOfLines={1}>
                 {formatBRL(totalValue)}
               </ThemedText>
-              <ThemedText type="small" style={[styles.heroLabel, { color: theme.primaryText }]}>
+              <ThemedText type="small" themeColor="textSecondary">
                 {plural('items', items.length)} · {plural('units', totalQuantity)}
               </ThemedText>
             </View>
@@ -103,7 +103,7 @@ export default function HomeScreen() {
                 { label: t('home.needRestock'), value: attention.length, icon: ['exclamationmark.triangle.fill', 'warning'], warn: attention.length > 0 },
               ].map(t => (
                 <View key={t.label} style={[styles.tile, card]}>
-                  <Icon ios={t.icon[0]} material={t.icon[1]} size={18} color={t.warn ? 'warning' : 'primary'} />
+                  <Icon ios={t.icon[0]} material={t.icon[1]} size={18} color={t.warn ? 'warning' : 'textSecondary'} />
                   <ThemedText type="subtitle" style={styles.tileValue}>{t.value}</ThemedText>
                   <ThemedText type="small" themeColor="textSecondary">{t.label}</ThemedText>
                 </View>
@@ -200,12 +200,11 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   pad: { paddingHorizontal: Spacing.four, gap: Spacing.four },
-  hero: { borderRadius: Radius.xl, padding: Spacing.four, gap: Spacing.one },
-  heroLabel: { color: '#FFFFFFCC' },
-  heroValue: { fontWeight: 700 },
+  hero: { borderRadius: Radius.lg, borderWidth: 1, padding: Spacing.four, gap: Spacing.one },
+  heroValue: { fontWeight: 700, fontSize: 40, lineHeight: 48, letterSpacing: -1.5 },
   tiles: { flexDirection: 'row', gap: Spacing.two },
   tile: { flex: 1, borderRadius: Radius.lg, borderWidth: 1, padding: Spacing.three, gap: Spacing.half },
-  tileValue: { fontSize: 26, lineHeight: 34, fontWeight: 700 },
+  tileValue: { fontSize: 26, lineHeight: 34, fontWeight: 700, letterSpacing: -0.5 },
   section: { gap: Spacing.two },
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   sectionTitle: { fontWeight: 700, fontSize: 18 },

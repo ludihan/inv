@@ -14,7 +14,7 @@ export function Badge({ label, tone = 'neutral' }: { label: string; tone?: Tone 
     success: { bg: theme.successMuted, fg: theme.success },
     warning: { bg: theme.warningMuted, fg: theme.warning },
     danger: { bg: theme.dangerMuted, fg: theme.danger },
-    primary: { bg: theme.primaryMuted, fg: theme.primary },
+    primary: { bg: theme.backgroundSelected, fg: theme.text },
   }[tone];
 
   return (
@@ -27,5 +27,5 @@ export function Badge({ label, tone = 'neutral' }: { label: string; tone?: Tone 
 }
 
 const styles = StyleSheet.create({
-  badge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: Radius.pill },
+  badge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: Radius.md },
 });
