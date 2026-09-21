@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button } from '@/components/button';
 import { TextField } from '@/components/text-field';
 import { ThemedText } from '@/components/themed-text';
@@ -11,6 +12,7 @@ import { useT } from '@/i18n';
 
 export default function CompanyFormModal() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { t } = useT();
   const { addCompany, editCompany } = useInventory();
 
@@ -31,7 +33,7 @@ export default function CompanyFormModal() {
 
   return (
     <ThemedView style={styles.container}>
-      <KeyboardAwareScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+      <KeyboardAwareScrollView contentContainerStyle={[styles.content, { paddingBottom: 24 + insets.bottom }]} keyboardShouldPersistTaps="handled">
         <ThemedText type="subtitle">{isEditing ? t('form.editCompany') : t('form.newCompany')}</ThemedText>
 
         <TextField

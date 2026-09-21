@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, StyleSheet, ScrollView, Pressable, TextInput } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Button } from '@/components/button';
@@ -18,6 +19,7 @@ import { useT } from '@/i18n';
 
 export default function ItemFormModal() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const theme = useTheme();
   const { t } = useT();
   const { companies, sectors, items, addItem, editItem, removeItem } = useInventory();
@@ -112,7 +114,7 @@ export default function ItemFormModal() {
 
   return (
     <ThemedView style={styles.container}>
-      <KeyboardAwareScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+      <KeyboardAwareScrollView contentContainerStyle={[styles.content, { paddingBottom: 24 + insets.bottom }]} keyboardShouldPersistTaps="handled">
         <ThemedText type="subtitle">{isEditing ? t('form.editItem') : t('form.newItem')}</ThemedText>
 
         <TextField label={t('form.name')} value={name} onChangeText={setName} placeholder={t('form.namePlaceholder')} />

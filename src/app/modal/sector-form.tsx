@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Badge } from '@/components/badge';
 import { Button } from '@/components/button';
 import { TextField } from '@/components/text-field';
@@ -12,6 +13,7 @@ import { useT } from '@/i18n';
 
 export default function SectorFormModal() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { t } = useT();
   const { addSector, editSector, getCompanyName } = useInventory();
 
@@ -33,7 +35,7 @@ export default function SectorFormModal() {
 
   return (
     <ThemedView style={styles.container}>
-      <KeyboardAwareScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+      <KeyboardAwareScrollView contentContainerStyle={[styles.content, { paddingBottom: 24 + insets.bottom }]} keyboardShouldPersistTaps="handled">
         <View style={styles.titleBlock}>
           <ThemedText type="subtitle">{isEditing ? t('form.editSector') : t('form.newSector')}</ThemedText>
           {companyName ? <Badge label={companyName} tone="primary" /> : null}

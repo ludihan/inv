@@ -1,5 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { Modal, Pressable, StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { Radius, Spacing } from '@/constants/theme';
@@ -24,6 +25,7 @@ interface SheetState {
 export function useActionSheet() {
   const theme = useTheme();
   const { t } = useT();
+  const insets = useSafeAreaInsets();
   const [sheet, setSheet] = useState<SheetState | null>(null);
 
   const close = useCallback(() => setSheet(null), []);
@@ -32,7 +34,7 @@ export function useActionSheet() {
   const element = (
     <Modal visible={!!sheet} transparent animationType="fade" onRequestClose={close} statusBarTranslucent>
       <Pressable style={styles.backdrop} onPress={close}>
-        <Pressable style={[styles.sheet, { backgroundColor: theme.backgroundElement }]} onPress={() => {}}>
+        <Pressable style={[styles.sheet, { backgroundColor: theme.backgroundElement, paddingBottom: Spacing.three + insets.bottom }]} onPress={() => {}}>
           <ThemedText type="smallBold" themeColor="textSecondary" numberOfLines={1} style={styles.title}>
             {sheet?.title}
           </ThemedText>
@@ -71,7 +73,6 @@ const styles = StyleSheet.create({
   sheet: {
     borderTopLeftRadius: Radius.xl,
     borderTopRightRadius: Radius.xl,
-    paddingBottom: Spacing.four,
     overflow: 'hidden',
     width: '100%',
     maxWidth: 600,
