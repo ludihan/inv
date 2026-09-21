@@ -1,8 +1,8 @@
 import { Tabs } from 'expo-router';
-import { useColorScheme } from 'react-native';
 import { SymbolView } from 'expo-symbols';
 
 import { Colors } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 
 export default function TabLayout() {
   const scheme = useColorScheme();
@@ -11,11 +11,13 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: colors.text,
+        headerShown: false,
+        tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textSecondary,
         tabBarHideOnKeyboard: true,
         tabBarStyle: {
-          backgroundColor: colors.background,
+          backgroundColor: colors.backgroundElement,
+          borderTopColor: colors.border,
         },
         headerStyle: {
           backgroundColor: colors.background,
@@ -42,7 +44,7 @@ export default function TabLayout() {
           title: 'Items',
           tabBarIcon: ({ color, size }) => (
             <SymbolView
-              name={{ ios: 'shippingbox.fill', android: 'inventory_2', web: 'box' }}
+              name={{ ios: 'shippingbox.fill', android: 'inventory_2', web: 'inventory_2' }}
               tintColor={color}
               size={size}
             />
@@ -55,7 +57,20 @@ export default function TabLayout() {
           title: 'Companies',
           tabBarIcon: ({ color, size }) => (
             <SymbolView
-              name={{ ios: 'building.2.fill', android: 'business', web: 'folder' }}
+              name={{ ios: 'building.2.fill', android: 'business', web: 'business' }}
+              tintColor={color}
+              size={size}
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="settings"
+        options={{
+          title: 'Settings',
+          tabBarIcon: ({ color, size }) => (
+            <SymbolView
+              name={{ ios: 'gearshape.fill', android: 'settings', web: 'settings' }}
               tintColor={color}
               size={size}
             />
