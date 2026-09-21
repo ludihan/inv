@@ -2,6 +2,9 @@ import { KeyboardProvider } from 'react-native-keyboard-controller';
 
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
+import * as SystemUI from 'expo-system-ui';
+import { StatusBar } from 'expo-status-bar';
+import { useEffect } from 'react';
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
 import { Colors } from '@/constants/theme';
@@ -27,6 +30,10 @@ function RootStack() {
   const { t } = useT();
   const colors = Colors[colorScheme === 'dark' ? 'dark' : 'light'];
   const base = colorScheme === 'dark' ? DarkTheme : DefaultTheme;
+  useEffect(() => {
+    SystemUI.setBackgroundColorAsync(colors.background).catch(() => {});
+  }, [colors.background]);
+
   const navTheme = {
     ...base,
     colors: {
@@ -43,6 +50,7 @@ function RootStack() {
     <KeyboardProvider>
     <ThemeProvider value={navTheme}>
       <InventoryProvider>
+        <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
         <AnimatedSplashOverlay />
         <Stack screenOptions={{ headerShadowVisible: false }}>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
