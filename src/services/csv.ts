@@ -1,3 +1,4 @@
+import { Platform } from 'react-native';
 import { File, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import * as DocumentPicker from 'expo-document-picker';
@@ -78,17 +79,33 @@ export async function exportToCSV(): Promise<void> {
     csv += `ITEM,${item.id},${escapeCSV(item.name)},${item.companyId},${item.sectorId},${item.value},${item.quantity ?? 1},${escapeCSV(item.description || '')},${item.createdAt},${item.updatedAt},${escapeCSV(item.sku || '')},${item.minQuantity ?? ''}\n`;
   }
   
+  if (Platform.OS === 'web') {
+    // expo-file-system can't write files in the browser; trigger a download instead.
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'inventory_export.csv';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    return;
+  }
+
   const file = new File(Paths.document, 'inventory_export.csv');
   await file.write(csv);
-  
+
   if (await Sharing.isAvailableAsync()) {
-    await Sharing.shareAsync(file.uri);
+    await Sharing.shareAsync(file.uri, { mimeType: 'text/csv', UTI: 'public.comma-separated-values-text' });
   }
 }
 
 export async function importFromCSV(): Promise<InventoryData | null> {
   const result = await DocumentPicker.getDocumentAsync({
-    type: 'text/csv',
+    // Android often reports CSVs as text/plain, text/comma-separated-values or
+    // application/vnd.ms-excel, so a strict 'text/csv' filter hides valid files.
+    type: '*/*',
     copyToCacheDirectory: true,
   });
   
@@ -96,10 +113,12 @@ export async function importFromCSV(): Promise<InventoryData | null> {
     return null;
   }
   
-  const fileUri = result.assets[0].uri;
-  const file = new File(fileUri);
-  const content = await file.text();
-  const rows = parseCSV(content);
+  const asset = result.assets[0];
+  const content =
+    Platform.OS === 'web'
+      ? await (asset.file ?? (await (await fetch(asset.uri)).blob())).text()
+      : await new File(asset.uri).text();
+  const rows = parseCSV(content.replace(/^\uFEFF/, ''));
 
   const companies: Company[] = [];
   const sectors: Sector[] = [];
