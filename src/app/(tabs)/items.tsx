@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { View, StyleSheet, FlatList, Pressable, Alert, TextInput } from 'react-native';
+import { View, StyleSheet, FlatList, Pressable, TextInput } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -14,6 +14,7 @@ import { ScreenHeader } from '@/components/screen-header';
 import { useTheme } from '@/hooks/use-theme';
 import { useInventory } from '@/hooks/useInventory';
 import { Item } from '@/types';
+import { confirmDestructive } from '@/services/dialog';
 import { formatBRL } from '@/services/csv';
 import { isLowStock, isOutOfStock, itemQuantity, itemTotal, normalize, sumTotal } from '@/services/stock';
 import { BottomTabInset, MaxContentWidth, Radius, Spacing } from '@/constants/theme';
@@ -92,10 +93,7 @@ export default function ItemsScreen() {
   };
 
   const confirmDelete = (item: Item) => {
-    Alert.alert('Delete Item', `Are you sure you want to delete "${item.name}"?`, [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Delete', style: 'destructive', onPress: () => removeItem(item.id) },
-    ]);
+    confirmDestructive({ title: 'Delete Item', message: `Are you sure you want to delete "${item.name}"?`, confirmLabel: 'Delete', cancelLabel: 'Cancel', onConfirm: () => removeItem(item.id) });
   };
 
   const filteredSectors = selectedCompanyId

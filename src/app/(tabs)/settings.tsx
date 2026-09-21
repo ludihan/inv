@@ -1,5 +1,5 @@
 import React from 'react';
-import { Alert, ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Constants from 'expo-constants';
 
@@ -13,6 +13,7 @@ import { useTheme } from '@/hooks/use-theme';
 import { useThemePreference } from '@/hooks/use-theme-preference';
 import { useInventory } from '@/hooks/useInventory';
 import { exportToCSV, importAndMergeCSV } from '@/services/csv';
+import { confirmDestructive, notify } from '@/services/dialog';
 import type { ThemePreference } from '@/services/storage';
 
 const THEME_OPTIONS: { value: ThemePreference; label: string }[] = [
@@ -43,7 +44,7 @@ export default function SettingsScreen() {
     try {
       await exportToCSV();
     } catch (e: any) {
-      Alert.alert('Error', e.message || 'Failed to export.');
+      notify('Error', e.message || 'Failed to export.');
     }
   };
 
@@ -52,27 +53,26 @@ export default function SettingsScreen() {
       const result = await importAndMergeCSV();
       if (result.imported) {
         await reload();
-        Alert.alert('Imported', result.message);
+        notify('Imported', result.message);
       }
     } catch (e: any) {
-      Alert.alert('Error', e.message || 'Failed to import.');
+      notify('Error', e.message || 'Failed to import.');
     }
   };
 
   const handleClear = () => {
-    Alert.alert(
-      'Delete all data',
-      'This permanently removes every company, sector and item on this device. Export a CSV first if you want a backup.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Delete everything', style: 'destructive', onPress: () => clearAll() },
-      ],
-    );
+    confirmDestructive({
+      title: 'Delete all data',
+      message: 'This permanently removes every company, sector and item on this device. Export a CSV first if you want a backup.',
+      confirmLabel: 'Delete everything',
+      cancelLabel: 'Cancel',
+      onConfirm: () => clearAll(),
+    });
   };
 
   const handleSample = async () => {
     await loadSampleData();
-    Alert.alert('Sample data added', 'A demo company with a few items was created.');
+    notify('Sample data added', 'A demo company with a few items was created.');
   };
 
   return (

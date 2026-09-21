@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, Alert, Pressable, TextInput } from 'react-native';
+import { View, StyleSheet, ScrollView, Pressable, TextInput } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ThemedText } from '@/components/themed-text';
@@ -9,6 +9,7 @@ import { Chip } from '@/components/chip';
 import { CurrencyInput } from '@/components/currency-input';
 import { Icon } from '@/components/icon';
 import { TextField } from '@/components/text-field';
+import { confirmDestructive } from '@/services/dialog';
 import { formatBRL } from '@/services/csv';
 import { Radius } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
@@ -90,17 +91,16 @@ export default function ItemFormModal() {
   
   const handleDelete = () => {
     if (!params.itemId) return;
-    Alert.alert('Delete Item', `Are you sure you want to delete "${name}"?`, [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Delete',
-        style: 'destructive',
-        onPress: async () => {
-          await removeItem(params.itemId!);
-          router.back();
-        },
+    confirmDestructive({
+      title: 'Delete Item',
+      message: `Are you sure you want to delete "${name}"?`,
+      confirmLabel: 'Delete',
+      cancelLabel: 'Cancel',
+      onConfirm: async () => {
+        await removeItem(params.itemId!);
+        router.back();
       },
-    ]);
+    });
   };
 
   const parseCount = (text: string) => {

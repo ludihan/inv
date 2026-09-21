@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, FlatList, Pressable, Alert } from 'react-native';
+import { StyleSheet, FlatList, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -11,6 +11,7 @@ import { Icon } from '@/components/icon';
 import { ScreenHeader } from '@/components/screen-header';
 import { useTheme } from '@/hooks/use-theme';
 import { useInventory } from '@/hooks/useInventory';
+import { confirmDestructive } from '@/services/dialog';
 import { Company, Sector } from '@/types';
 import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
 
@@ -28,14 +29,7 @@ export default function CompaniesScreen() {
   };
   
   const handleDeleteCompany = (company: Company) => {
-    Alert.alert(
-      'Delete Company',
-      `Are you sure you want to delete "${company.name}"? This will also delete all sectors and items in this company.`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Delete', style: 'destructive', onPress: () => removeCompany(company.id) },
-      ]
-    );
+    confirmDestructive({ title: 'Delete Company', message: `Are you sure you want to delete "${company.name}"? This will also delete all sectors and items in this company.`, confirmLabel: 'Delete', cancelLabel: 'Cancel', onConfirm: () => removeCompany(company.id) });
   };
   
   const openCompanyMenu = (company: Company) => {
@@ -78,14 +72,7 @@ export default function CompaniesScreen() {
   };
   
   const handleDeleteSector = (sector: Sector) => {
-    Alert.alert(
-      'Delete Sector',
-      `Are you sure you want to delete "${sector.name}"? This will also delete all items in this sector.`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Delete', style: 'destructive', onPress: () => removeSector(sector.id) },
-      ]
-    );
+    confirmDestructive({ title: 'Delete Sector', message: `Are you sure you want to delete "${sector.name}"? This will also delete all items in this sector.`, confirmLabel: 'Delete', cancelLabel: 'Cancel', onConfirm: () => removeSector(sector.id) });
   };
 
   return (
