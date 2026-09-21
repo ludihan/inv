@@ -17,6 +17,10 @@ export interface Item {
   description?: string;
   value: number;
   quantity: number;
+  /** Optional stock keeping unit / asset tag. */
+  sku?: string;
+  /** Quantity at or below which the item is flagged as low stock. */
+  minQuantity?: number;
   companyId: string;
   sectorId: string;
   createdAt: string;

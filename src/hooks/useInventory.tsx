@@ -1,6 +1,7 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef, type ReactNode } from 'react';
 import { Company, Sector, Item } from '@/types';
 import * as storage from '@/services/storage';
+import { sumQuantity, sumTotal } from '@/services/stock';
 
 interface InventoryContextValue {
   companies: Company[];
@@ -16,6 +17,10 @@ interface InventoryContextValue {
   addItem: (item: Omit<Item, 'id' | 'createdAt' | 'updatedAt'>) => Promise<Item>;
   editItem: (id: string, updates: Partial<Item>) => Promise<Item | null>;
   removeItem: (id: string) => Promise<boolean>;
+  duplicateItem: (id: string) => Promise<Item | null>;
+  adjustQuantity: (id: string, delta: number) => Promise<void>;
+  clearAll: () => Promise<void>;
+  loadSampleData: () => Promise<void>;
   getTotalValue: () => number;
   getTotalQuantity: () => number;
   getItemsByCompany: (companyId: string) => Item[];
@@ -33,6 +38,8 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
   const [sectors, setSectors] = useState<Sector[]>([]);
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
+  const itemsRef = useRef<Item[]>([]);
+  itemsRef.current = items;
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -120,13 +127,56 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
     return success;
   }, []);
 
-  const getTotalValue = useCallback(() => {
-    return items.reduce((sum, item) => sum + item.value * (item.quantity || 1), 0);
-  }, [items]);
+  const duplicateItem = useCallback(async (id: string) => {
+    const source = itemsRef.current.find(i => i.id === id);
+    if (!source) return null;
+    const { id: _id, createdAt: _c, updatedAt: _u, ...rest } = source;
+    const copy = await storage.saveItem({ ...rest, name: `${source.name} (copy)` });
+    setItems(prev => [...prev, copy]);
+    return copy;
+  }, []);
 
-  const getTotalQuantity = useCallback(() => {
-    return items.reduce((sum, item) => sum + (item.quantity || 0), 0);
-  }, [items]);
+  // Rapid +/- taps must not race on the read-modify-write in storage, so
+  // quantity changes are chained one after another.
+  const adjustQueue = useRef<Promise<unknown>>(Promise.resolve());
+  const adjustQuantity = useCallback((id: string, delta: number) => {
+    const run = adjustQueue.current.then(async () => {
+      const updated = await storage.adjustItemQuantity(id, delta);
+      if (updated) setItems(prev => prev.map(i => (i.id === id ? updated : i)));
+    });
+    adjustQueue.current = run.catch(() => {});
+    return run;
+  }, []);
+
+  const clearAll = useCallback(async () => {
+    await storage.clearAllData();
+    setCompanies([]);
+    setSectors([]);
+    setItems([]);
+  }, []);
+
+  const loadSampleData = useCallback(async () => {
+    const acme = await storage.saveCompany({ name: 'Acme Ltda.' });
+    const ti = await storage.saveSector({ name: 'T.I.', companyId: acme.id });
+    const rh = await storage.saveSector({ name: 'RH', companyId: acme.id });
+    const samples = [
+      { name: 'Notebook Dell Latitude', value: 5499.9, quantity: 12, minQuantity: 3, sku: 'TI-0001', sectorId: ti.id },
+      { name: 'Monitor 24"', value: 899.0, quantity: 2, minQuantity: 4, sku: 'TI-0002', sectorId: ti.id },
+      { name: 'Cadeira ergonômica', value: 1250.0, quantity: 20, minQuantity: 5, sku: 'RH-0001', sectorId: rh.id },
+      { name: 'Headset USB', value: 189.9, quantity: 0, minQuantity: 2, sku: 'TI-0003', sectorId: ti.id },
+    ];
+    const created: Item[] = [];
+    for (const { sectorId, ...rest } of samples) {
+      created.push(await storage.saveItem({ ...rest, companyId: acme.id, sectorId }));
+    }
+    setCompanies(prev => [...prev, acme]);
+    setSectors(prev => [...prev, ti, rh]);
+    setItems(prev => [...prev, ...created]);
+  }, []);
+
+  const getTotalValue = useCallback(() => sumTotal(items), [items]);
+
+  const getTotalQuantity = useCallback(() => sumQuantity(items), [items]);
 
   const getItemsByCompany = useCallback((companyId: string) => {
     return items.filter(i => i.companyId === companyId);
@@ -155,6 +205,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
         addCompany, editCompany, removeCompany,
         addSector, editSector, removeSector,
         addItem, editItem, removeItem,
+        duplicateItem, adjustQuantity, clearAll, loadSampleData,
         getTotalValue, getTotalQuantity,
         getItemsByCompany, getItemsBySector, getSectorsByCompany,
         getCompanyName, getSectorName,

@@ -6,6 +6,7 @@ const STORAGE_KEYS = {
   COMPANIES: '@inventory_companies',
   SECTORS: '@inventory_sectors',
   ITEMS: '@inventory_items',
+  THEME: '@inventory_theme',
 };
 
 function generateId(): string {
@@ -137,6 +138,16 @@ export async function updateItem(id: string, updates: Partial<Item>): Promise<It
   return items[index];
 }
 
+export async function adjustItemQuantity(id: string, delta: number): Promise<Item | null> {
+  const items = await getItems();
+  const index = items.findIndex(i => i.id === id);
+  if (index === -1) return null;
+  const quantity = Math.max(0, (items[index].quantity ?? 0) + delta);
+  items[index] = { ...items[index], quantity, updatedAt: new Date().toISOString() };
+  await AsyncStorage.setItem(STORAGE_KEYS.ITEMS, JSON.stringify(items));
+  return items[index];
+}
+
 export async function deleteItem(id: string): Promise<boolean> {
   const items = await getItems();
   const filtered = items.filter(i => i.id !== id);
@@ -171,4 +182,16 @@ export async function clearAllData(): Promise<void> {
     AsyncStorage.removeItem(STORAGE_KEYS.SECTORS),
     AsyncStorage.removeItem(STORAGE_KEYS.ITEMS),
   ]);
+}
+
+// Theme preference
+export type ThemePreference = 'system' | 'light' | 'dark';
+
+export async function getThemePreference(): Promise<ThemePreference> {
+  const value = await AsyncStorage.getItem(STORAGE_KEYS.THEME);
+  return value === 'light' || value === 'dark' ? value : 'system';
+}
+
+export async function saveThemePreference(pref: ThemePreference): Promise<void> {
+  await AsyncStorage.setItem(STORAGE_KEYS.THEME, pref);
 }

@@ -64,7 +64,7 @@ export async function exportToCSV(): Promise<void> {
   const data = await getAllData();
   
   // Companies CSV
-  let csv = 'TYPE,ID,NAME,COMPANY_ID,SECTOR_ID,VALUE,QUANTITY,DESCRIPTION,CREATED_AT,UPDATED_AT\n';
+  let csv = 'TYPE,ID,NAME,COMPANY_ID,SECTOR_ID,VALUE,QUANTITY,DESCRIPTION,CREATED_AT,UPDATED_AT,SKU,MIN_QUANTITY\n';
   
   for (const company of data.companies) {
     csv += `COMPANY,${company.id},${escapeCSV(company.name)},,,,,"",${company.createdAt},\n`;
@@ -75,7 +75,7 @@ export async function exportToCSV(): Promise<void> {
   }
   
   for (const item of data.items) {
-    csv += `ITEM,${item.id},${escapeCSV(item.name)},${item.companyId},${item.sectorId},${item.value},${item.quantity || 1},${escapeCSV(item.description || '')},${item.createdAt},${item.updatedAt}\n`;
+    csv += `ITEM,${item.id},${escapeCSV(item.name)},${item.companyId},${item.sectorId},${item.value},${item.quantity ?? 1},${escapeCSV(item.description || '')},${item.createdAt},${item.updatedAt},${escapeCSV(item.sku || '')},${item.minQuantity ?? ''}\n`;
   }
   
   const file = new File(Paths.document, 'inventory_export.csv');
@@ -126,13 +126,16 @@ export async function importFromCSV(): Promise<InventoryData | null> {
       });
     } else if (type === 'ITEM' && values[1]) {
       const quantity = parseInt(values[6], 10);
+      const minQuantity = parseInt(values[11], 10);
       items.push({
         id: values[1],
         name: values[2] ?? '',
         companyId: values[3] ?? '',
         sectorId: values[4] ?? '',
         value: parseFloat(values[5]) || 0,
-        quantity: Number.isFinite(quantity) && quantity > 0 ? quantity : 1,
+        quantity: Number.isFinite(quantity) && quantity >= 0 ? quantity : 1,
+        sku: values[10]?.trim() || undefined,
+        minQuantity: Number.isFinite(minQuantity) && minQuantity > 0 ? minQuantity : undefined,
         description: values[7] || undefined,
         createdAt: values[8] || now,
         updatedAt: values[9] || now,
