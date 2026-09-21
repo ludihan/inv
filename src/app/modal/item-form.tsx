@@ -147,7 +147,7 @@ export default function ItemFormModal() {
               <Icon ios="minus" material="remove" />
             </Pressable>
             <TextInput
-              style={[styles.qtyInput, { backgroundColor: theme.backgroundElement, borderColor: theme.border, color: theme.text }]}
+              style={[styles.qtyInput, styles.qtyGrow, { backgroundColor: theme.backgroundElement, borderColor: theme.border, color: theme.text }]}
               value={String(quantity)}
               onChangeText={text => setQuantity(parseCount(text))}
               keyboardType="number-pad"
@@ -166,7 +166,7 @@ export default function ItemFormModal() {
         <View style={styles.field}>
           <ThemedText type="small" themeColor="textSecondary">{t('form.lowStockAlert')}</ThemedText>
           <TextInput
-            style={[styles.qtyInput, styles.minInput, { backgroundColor: theme.backgroundElement, borderColor: theme.border, color: theme.text }]}
+            style={[styles.qtyInput, { backgroundColor: theme.backgroundElement, borderColor: theme.border, color: theme.text }]}
             value={String(minQuantity)}
             onChangeText={text => setMinQuantity(parseCount(text))}
             keyboardType="number-pad"
@@ -238,8 +238,8 @@ const styles = StyleSheet.create({
   field: { gap: 8 },
   stepperRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   stepBtn: { width: 48, height: 48, borderRadius: Radius.md, alignItems: 'center', justifyContent: 'center' },
-  qtyInput: { flex: 1, height: 48, borderWidth: 1, borderRadius: Radius.md, paddingHorizontal: 16, fontSize: 16 },
-  minInput: { flex: 0 },
+  qtyInput: { height: 48, borderWidth: 1, borderRadius: Radius.md, paddingHorizontal: 16, fontSize: 16 },
+  qtyGrow: { flex: 1 },
   totalBox: {
     flexDirection: 'row',
     justifyContent: 'space-between',
