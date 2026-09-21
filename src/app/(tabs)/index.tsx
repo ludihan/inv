@@ -58,11 +58,11 @@ export default function HomeScreen() {
 
   const openItem = (item: Item) => router.push({ pathname: '/modal/item-form', params: { itemId: item.id } });
 
-  const itemRow = (item: Item, trailing: string) => (
+  const itemRow = (item: Item, trailing: string, index: number) => (
     <Pressable
       key={item.id}
       onPress={() => openItem(item)}
-      style={({ pressed }) => [styles.row, { borderTopColor: theme.border, opacity: pressed ? 0.7 : 1 }]}
+      style={({ pressed }) => [styles.row, index === 0 && styles.firstRow, { borderTopColor: theme.border, opacity: pressed ? 0.7 : 1 }]}
     >
       <View style={styles.flex}>
         <ThemedText type="default" numberOfLines={1}>{item.name}</ThemedText>
@@ -126,11 +126,11 @@ export default function HomeScreen() {
             {attention.length > 0 && (
               <Section title={t('home.attention')} action={{ label: t('home.viewAll'), onPress: () => router.push({ pathname: '/items', params: { lowStock: '1' } }) }}>
                 <View style={[styles.list, card]}>
-                  {attention.slice(0, 4).map(item => (
+                  {attention.slice(0, 4).map((item, index) => (
                     <Pressable
                       key={item.id}
                       onPress={() => openItem(item)}
-                      style={({ pressed }) => [styles.row, { borderTopColor: theme.border, opacity: pressed ? 0.7 : 1 }]}
+                      style={({ pressed }) => [styles.row, index === 0 && styles.firstRow, { borderTopColor: theme.border, opacity: pressed ? 0.7 : 1 }]}
                     >
                       <View style={styles.flex}>
                         <ThemedText type="default" numberOfLines={1}>{item.name}</ThemedText>
@@ -171,7 +171,7 @@ export default function HomeScreen() {
             {topItems.length > 0 && (
               <Section title={t('home.topItems')}>
                 <View style={[styles.list, card]}>
-                  {topItems.map(item => itemRow(item, formatBRL(itemTotal(item))))}
+                  {topItems.map((item, i) => itemRow(item, formatBRL(itemTotal(item)), i))}
                 </View>
               </Section>
             )}
@@ -179,7 +179,7 @@ export default function HomeScreen() {
             {recent.length > 0 && (
               <Section title={t('home.recent')}>
                 <View style={[styles.list, card]}>
-                  {recent.map(item => itemRow(item, new Date(item.updatedAt).toLocaleDateString(locale)))}
+                  {recent.map((item, i) => itemRow(item, new Date(item.updatedAt).toLocaleDateString(locale), i))}
                 </View>
               </Section>
             )}
@@ -218,6 +218,7 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.two + 2,
     borderTopWidth: StyleSheet.hairlineWidth,
   },
+  firstRow: { borderTopWidth: 0 },
   trailing: { fontWeight: 600 },
   barBlock: { gap: 6 },
   barLabels: { flexDirection: 'row', justifyContent: 'space-between', gap: Spacing.two },
