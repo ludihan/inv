@@ -57,7 +57,7 @@ export function useActionSheet() {
             </Pressable>
           ))}
           <View style={[styles.gap, { backgroundColor: theme.background }]} />
-          <Pressable style={styles.action} onPress={close} accessibilityRole="button">
+          <Pressable style={[styles.action, { borderTopColor: theme.border }]} onPress={close} accessibilityRole="button">
             <ThemedText type="default" themeColor="textSecondary">{t('cancel')}</ThemedText>
           </Pressable>
         </Pressable>
