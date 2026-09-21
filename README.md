@@ -45,7 +45,7 @@ between devices through CSV export/import.
 **Settings**
 - Appearance: follow the system, or force light / dark (remembered across launches).
 - Language: **English** and **Português (BR)**; follows the device language by default and can be overridden.
-- CSV export / import (merge by ID, existing rows are kept).
+- CSV export / import (merge by ID, existing rows are kept). On web, export downloads the file and import opens a file picker.
 - Load sample data, or delete all data.
 
 ## Design
