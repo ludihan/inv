@@ -6,7 +6,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { CompanyCard } from '@/components/company-card';
+import { useActionSheet } from '@/components/action-sheet';
 import { EmptyState } from '@/components/empty-state';
+import { Icon } from '@/components/icon';
+import { ScreenHeader } from '@/components/screen-header';
 import { useTheme } from '@/hooks/use-theme';
 import { useInventory } from '@/hooks/useInventory';
 import { Company, Sector } from '@/types';
@@ -15,6 +18,7 @@ import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
 export default function CompaniesScreen() {
   const router = useRouter();
   const theme = useTheme();
+  const sheet = useActionSheet();
   const { companies, removeCompany, removeSector, getSectorsByCompany, getItemsByCompany } = useInventory();
   
   const handleEditCompany = (company: Company) => {
@@ -35,6 +39,23 @@ export default function CompaniesScreen() {
     );
   };
   
+  const openCompanyMenu = (company: Company) => {
+    sheet.show(company.name, [
+      { label: 'View items', onPress: () => router.push({ pathname: '/items', params: { companyId: company.id } }) },
+      { label: 'Add sector', onPress: () => handleAddSector(company.id) },
+      { label: 'Rename', onPress: () => handleEditCompany(company) },
+      { label: 'Delete', destructive: true, onPress: () => handleDeleteCompany(company) },
+    ]);
+  };
+
+  const openSectorMenu = (sector: Sector) => {
+    sheet.show(sector.name, [
+      { label: 'View items', onPress: () => router.push({ pathname: '/items', params: { companyId: sector.companyId, sectorId: sector.id } }) },
+      { label: 'Rename', onPress: () => handleEditSector(sector) },
+      { label: 'Delete', destructive: true, onPress: () => handleDeleteSector(sector) },
+    ]);
+  };
+
   const handleAddCompany = () => {
     router.push('/modal/company-form');
   };
@@ -71,16 +92,15 @@ export default function CompaniesScreen() {
   return (
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
-        <View style={styles.header}>
-          <ThemedText type="title" style={styles.title}>Companies</ThemedText>
-        </View>
+        <ScreenHeader title="Companies" subtitle="Tap a company for its sectors and totals" />
         
         {/* Companies List */}
         {companies.length === 0 ? (
           <EmptyState
             title="No companies yet"
-            message="Add your first company to get started"
+            message="Companies group your sectors and items. Add your first one to get started."
             icon="🏢"
+            action={{ label: 'Add company', onPress: handleAddCompany }}
           />
         ) : (
           <FlatList
@@ -88,32 +108,32 @@ export default function CompaniesScreen() {
             keyExtractor={(item) => item.id}
             contentContainerStyle={styles.listContent}
             renderItem={({ item: company }) => {
-              const companySectors = getSectorsByCompany(company.id);
-              const companyItems = getItemsByCompany(company.id);
-              
               return (
                 <CompanyCard
                   company={company}
-                  sectors={companySectors}
-                  itemCount={companyItems.length}
+                  sectors={getSectorsByCompany(company.id)}
+                  items={getItemsByCompany(company.id)}
                   onPress={handleEditCompany}
-                  onLongPress={handleDeleteCompany}
+                  onMenu={openCompanyMenu}
                   onAddSector={handleAddSector}
                   onPressSector={handleEditSector}
-                  onLongPressSector={handleDeleteSector}
+                  onMenuSector={openSectorMenu}
                 />
               );
             }}
           />
         )}
         
-        {/* FAB */}
-        <Pressable
-          style={[styles.fab, { backgroundColor: theme.text }]}
-          onPress={handleAddCompany}
-        >
-          <ThemedText type="subtitle" style={{ color: theme.background }}>+</ThemedText>
-        </Pressable>
+        {companies.length > 0 && (
+          <Pressable
+            accessibilityLabel="Add company"
+            style={({ pressed }) => [styles.fab, { backgroundColor: theme.primary, opacity: pressed ? 0.85 : 1 }]}
+            onPress={handleAddCompany}
+          >
+            <Icon ios="plus" material="add" size={26} color="primaryText" />
+          </Pressable>
+        )}
+        {sheet.element}
       </SafeAreaView>
     </ThemedView>
   );
@@ -126,18 +146,10 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
   },
-  header: {
-    paddingHorizontal: Spacing.four,
-    paddingTop: Spacing.three,
-    paddingBottom: Spacing.two,
-  },
-  title: {
-    textAlign: 'center',
-  },
   listContent: {
-    padding: Spacing.four,
+    paddingHorizontal: Spacing.four,
     paddingBottom: BottomTabInset + Spacing.four + 80,
-    gap: Spacing.two,
+    gap: Spacing.three,
     maxWidth: MaxContentWidth,
     alignSelf: 'center',
     width: '100%',
