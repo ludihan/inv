@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { View, StyleSheet, FlatList, Pressable, Alert, TextInput } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -50,14 +50,20 @@ export default function ItemsScreen() {
   const [sortKey, setSortKey] = useState<SortKey>('recent');
 
   // Deep links from other screens (e.g. "View items" on a company, low stock alert).
-  useEffect(() => {
-    if (params.companyId || params.sectorId || params.lowStock) {
+  const paramKey =
+    params.companyId || params.sectorId || params.lowStock
+      ? `${params.companyId ?? ''}|${params.sectorId ?? ''}|${params.lowStock ?? ''}`
+      : '';
+  const [appliedParamKey, setAppliedParamKey] = useState('');
+  if (paramKey !== appliedParamKey) {
+    setAppliedParamKey(paramKey);
+    if (paramKey) {
       setSelectedCompanyId(params.companyId ?? null);
       setSelectedSectorId(params.sectorId ?? null);
       setLowStockOnly(params.lowStock === '1');
       setSearchQuery('');
     }
-  }, [params.companyId, params.sectorId, params.lowStock]);
+  }
 
   const filteredItems = useMemo(() => {
     const q = normalize(searchQuery.trim());

@@ -1,9 +1,8 @@
 import React from 'react';
-import { View, StyleSheet, FlatList, Pressable, Alert } from 'react-native';
+import { StyleSheet, FlatList, Pressable, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { CompanyCard } from '@/components/company-card';
 import { useActionSheet } from '@/components/action-sheet';

@@ -1,7 +1,6 @@
-import { Stack } from 'expo-router';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 
-import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router';
+import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon';

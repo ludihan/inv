@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { View, StyleSheet, ScrollView, Alert, Pressable, TextInput } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -31,24 +31,25 @@ export default function ItemFormModal() {
   const [name, setName] = useState(existingItem?.name || '');
   const [description, setDescription] = useState(existingItem?.description || '');
   const [value, setValue] = useState(existingItem?.value || 0);
-  const [quantity, setQuantity] = useState(existingItem?.quantity || 1);
+  const [quantity, setQuantity] = useState(existingItem?.quantity ?? 1);
   const [sku, setSku] = useState(existingItem?.sku || '');
   const [minQuantity, setMinQuantity] = useState(existingItem?.minQuantity ?? 0);
   const [selectedCompanyId, setSelectedCompanyId] = useState(existingItem?.companyId || params.companyId || '');
   const [selectedSectorId, setSelectedSectorId] = useState(existingItem?.sectorId || params.sectorId || '');
   
-  useEffect(() => {
-    if (existingItem) {
-      setName(existingItem.name);
-      setDescription(existingItem.description || '');
-      setValue(existingItem.value);
-      setQuantity(existingItem.quantity || 1);
-      setSku(existingItem.sku || '');
-      setMinQuantity(existingItem.minQuantity ?? 0);
-      setSelectedCompanyId(existingItem.companyId);
-      setSelectedSectorId(existingItem.sectorId);
-    }
-  }, [existingItem]);
+  // Items may not be loaded yet on a cold deep link; fill the form once they are.
+  const [loadedId, setLoadedId] = useState(existingItem?.id);
+  if (existingItem && existingItem.id !== loadedId) {
+    setLoadedId(existingItem.id);
+    setName(existingItem.name);
+    setDescription(existingItem.description || '');
+    setValue(existingItem.value);
+    setQuantity(existingItem.quantity ?? 1);
+    setSku(existingItem.sku || '');
+    setMinQuantity(existingItem.minQuantity ?? 0);
+    setSelectedCompanyId(existingItem.companyId);
+    setSelectedSectorId(existingItem.sectorId);
+  }
   
   const filteredSectors = sectors.filter(s => s.companyId === selectedCompanyId);
   

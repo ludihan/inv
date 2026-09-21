@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { TextInput, StyleSheet, type TextInputProps } from 'react-native';
 import { useTheme } from '@/hooks/use-theme';
 
@@ -14,17 +14,12 @@ function formatCents(cents: number): string {
 
 export function CurrencyInput({ value, onChangeText, style, ...props }: CurrencyInputProps) {
   const theme = useTheme();
-  const [cents, setCents] = useState(() => Math.round(value * 100));
-
-  useEffect(() => {
-    setCents(Math.round(value * 100));
-  }, [value]);
+  const cents = Math.round(value * 100);
 
   const handleChange = (text: string) => {
     const digits = text.replace(/\D/g, '');
     const newCents = digits === '' ? 0 : parseInt(digits, 10);
     if (newCents > 100000000000) return;
-    setCents(newCents);
     onChangeText(newCents / 100);
   };
 

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef, type ReactNode } from 'react';
-import { Company, Sector, Item } from '@/types';
+import { Company, Sector, Item, InventoryData } from '@/types';
 import * as storage from '@/services/storage';
 import { sumQuantity, sumTotal } from '@/services/stock';
 
@@ -39,24 +39,31 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
   const itemsRef = useRef<Item[]>([]);
-  itemsRef.current = items;
+  useEffect(() => {
+    itemsRef.current = items;
+  }, [items]);
 
-  const loadData = useCallback(async () => {
-    setLoading(true);
-    const [companiesData, sectorsData, itemsData] = await Promise.all([
-      storage.getCompanies(),
-      storage.getSectors(),
-      storage.getItems(),
-    ]);
-    setCompanies(companiesData);
-    setSectors(sectorsData);
-    setItems(itemsData);
+  const applyData = useCallback((data: InventoryData) => {
+    setCompanies(data.companies);
+    setSectors(data.sectors);
+    setItems(data.items);
     setLoading(false);
   }, []);
 
+  const loadData = useCallback(async () => {
+    setLoading(true);
+    applyData(await storage.getAllData());
+  }, [applyData]);
+
   useEffect(() => {
-    loadData();
-  }, [loadData]);
+    let active = true;
+    storage.getAllData().then(data => {
+      if (active) applyData(data);
+    });
+    return () => {
+      active = false;
+    };
+  }, [applyData]);
 
   const addCompany = useCallback(async (name: string) => {
     const company = await storage.saveCompany({ name });
