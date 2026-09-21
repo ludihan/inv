@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { useActionSheet } from '@/components/action-sheet';
 import { ItemCard } from '@/components/item-card';
 import { EmptyState } from '@/components/empty-state';
 import { Chip } from '@/components/chip';
@@ -36,6 +37,7 @@ const comparators: Record<SortKey, (a: Item, b: Item) => number> = {
 export default function ItemsScreen() {
   const router = useRouter();
   const theme = useTheme();
+  const sheet = useActionSheet();
   const params = useLocalSearchParams<{ companyId?: string; sectorId?: string; lowStock?: string }>();
   const {
     items, companies, sectors, removeItem, duplicateItem, adjustQuantity, getCompanyName, getSectorName,
@@ -72,11 +74,10 @@ export default function ItemsScreen() {
   }, [items, searchQuery, selectedCompanyId, selectedSectorId, lowStockOnly, sortKey]);
 
   const openMenu = (item: Item) => {
-    Alert.alert(item.name, undefined, [
-      { text: 'Edit', onPress: () => handleEditItem(item) },
-      { text: 'Duplicate', onPress: () => duplicateItem(item.id) },
-      { text: 'Delete', style: 'destructive', onPress: () => confirmDelete(item) },
-      { text: 'Cancel', style: 'cancel' },
+    sheet.show(item.name, [
+      { label: 'Edit', onPress: () => handleEditItem(item) },
+      { label: 'Duplicate', onPress: () => duplicateItem(item.id) },
+      { label: 'Delete', destructive: true, onPress: () => confirmDelete(item) },
     ]);
   };
 
@@ -242,6 +243,7 @@ export default function ItemsScreen() {
             <Icon ios="plus" material="add" size={26} color="primaryText" />
           </Pressable>
         )}
+        {sheet.element}
       </SafeAreaView>
     </ThemedView>
   );
